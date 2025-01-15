@@ -1,0 +1,8 @@
+# ignore node_modules  in backend-app and in frontend-app
+backend-app/node_modules
+frontend-app/node_modules
+
+backend-app/.env
+frontend-app/.env
+
+backend-app/resources
