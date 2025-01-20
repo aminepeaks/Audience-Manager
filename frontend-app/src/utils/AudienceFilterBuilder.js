@@ -1,5 +1,8 @@
 class AudienceFilterBuilder {
   constructor() {
+    // Cache common paths
+    this._filterExpressionsPath = ['filterClauses', 0, 'simpleFilter', 'filterExpression', 'andGroup', 'filterExpressions'];
+    
     this.filter = {
       filterClauses: [{
         clauseType: "INCLUDE",
@@ -13,9 +16,18 @@ class AudienceFilterBuilder {
         }
       }]
     };
+
+    // Cache filter expressions for faster access
+    this.filterExpressions = this.filter.filterClauses[0].simpleFilter
+      .filterExpression.andGroup.filterExpressions;
   }
 
   addUrlPattern(paths) {
+    if (!paths?.length) return this;
+
+    // Pre-compile regexp pattern
+    const pattern = `^(${paths.map(p => p.replace(/\//g, '\\/')).join('|')})$`;
+    
     const urlFilter = {
       orGroup: {
         filterExpressions: [{
@@ -25,7 +37,7 @@ class AudienceFilterBuilder {
             inAnyNDayPeriod: 0,
             stringFilter: {
               matchType: "FULL_REGEXP",
-              value: `^(${paths.map(p => p.replace('/', '\\/')).join('|')})$`,
+              value: pattern,
               caseSensitive: false
             },
             oneFilter: "stringFilter"
@@ -36,18 +48,19 @@ class AudienceFilterBuilder {
       expr: "orGroup"
     };
 
-    this.filter.filterClauses[0].simpleFilter
-      .filterExpression.andGroup.filterExpressions.push(urlFilter);
+    this.filterExpressions.push(urlFilter);
     return this;
   }
 
   addEvent(eventName, params = null) {
+    if (!eventName) return this;
+
     const eventFilter = {
       orGroup: {
         filterExpressions: [{
           eventFilter: {
-            eventName: eventName,
-            eventParameterFilterExpression: params
+            eventName,
+            ...(params && { eventParameterFilterExpression: params })
           },
           expr: "eventFilter"
         }]
@@ -55,8 +68,7 @@ class AudienceFilterBuilder {
       expr: "orGroup"
     };
 
-    this.filter.filterClauses[0].simpleFilter
-      .filterExpression.andGroup.filterExpressions.push(eventFilter);
+    this.filterExpressions.push(eventFilter);
     return this;
   }
 
@@ -64,7 +76,7 @@ class AudienceFilterBuilder {
     return {
       ...this.filter,
       name: `properties/279961840/audiences/${name}`,
-      displayName: displayName,
+      displayName,
       description: "",
       membershipDurationDays: membershipDays,
       adsPersonalizationEnabled: true,
