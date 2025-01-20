@@ -1,4 +1,5 @@
 import { client } from "../config/oauth.js";
+import fs from 'fs';
 
 
 // **Create Audience**
@@ -48,7 +49,8 @@ export const listAudiences = async (req, res) => {
     const [audiences] = await client.listAudiences({
       parent: formattedPropertyId
     });
-    
+    // save the audiences to a json file for debugging
+    // fs.writeFileSync('audiences.json', JSON.stringify(audiences, null, 2));
     res.json(audiences);
   } catch (err) {
     console.error('List audiences error:', err);
@@ -103,12 +105,18 @@ export const updateAudience = async (req, res) => {
 // **Delete Audience**
 export const deleteAudience = async (req, res) => {
   try {
-    const { accountName, audienceId } = req.params;
-
-    await client.deleteAudience({ name: `accounts/${accountName}/audiences/${audienceId}` });
-    res.status(204).send('Audience deleted successfully');
+    const { propertyId, audienceId } = req.params;
+    console.log('archiveAudience', propertyId, audienceId);
+    
+    await client.archiveAudience({ 
+      name: `properties/${propertyId}/audiences/${audienceId}` 
+    });
+    res.status(204).send();
   } catch (err) {
-    console.error(err);
-    res.status(500).send('An error occurred while deleting the audience');
+    console.error('Error archiving audience:', err);
+    res.status(500).json({
+      error: 'An error occurred while archiving the audience',
+      details: err.message
+    });
   }
 };
