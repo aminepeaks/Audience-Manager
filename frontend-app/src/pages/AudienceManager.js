@@ -13,8 +13,7 @@ import {
     Chip,
     CircularProgress,
     Tabs,
-    Tab,
-    TextField
+    Tab
 } from '@mui/material';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CloseIcon from '@mui/icons-material/Close';
@@ -22,7 +21,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { fetchAllAccountsAndProperties, getCachedData } from '../Services/dataService';
 import AudienceList from '../components/audiences/AudienceList';
 import AudienceForm from '../components/audiences/AudienceForm';
-import { AudienceFilterBuilder, getAvailableFilterOptions } from '../utils/AudienceFilterBuilder';
+import { AudienceFilterBuilder } from '../utils/AudienceFilterBuilder';
 import conditions from '../utils/conditions.json';
 
 const AudienceManager = () => {
@@ -34,10 +33,6 @@ const AudienceManager = () => {
     const [currentTab, setCurrentTab] = useState(0);
     const [selectedAudience, setSelectedAudience] = useState(null);
     const audienceListRef = useRef(null);
-    const [selectedCondition, setSelectedCondition] = useState('');
-    const [urlPatterns, setUrlPatterns] = useState(['']);
-    const [audienceName, setAudienceName] = useState('');
-    const [membershipDurationDays, setMembershipDurationDays] = useState(30);
 
     useEffect(() => {
         const initializeData = async () => {
@@ -82,9 +77,6 @@ const AudienceManager = () => {
     };
 
     const getFilteredProperties = () => {
-        console.log('Selected Accounts:', selectedAccounts); // Debug log
-        console.log('Properties Map:', propertiesMap); // Debug log
-
         return Object.entries(propertiesMap)
             .filter(([accountId]) => selectedAccounts.includes(accountId))
             .reduce((acc, [accountId, properties]) => {
@@ -94,7 +86,6 @@ const AudienceManager = () => {
     };
 
     const handlePropertyChange = (event) => {
-        console.log('Property Change Value:', event.target.value); // Debug log
         setSelectedProperties(event.target.value);
     };
 
@@ -127,57 +118,20 @@ const AudienceManager = () => {
         }
     };
 
-    const handleConditionChange = (event) => {
-        setSelectedCondition(event.target.value);
-    };
-
-    const handleUrlPatternChange = (index, value) => {
-        const newPatterns = [...urlPatterns];
-        newPatterns[index] = value;
-        setUrlPatterns(newPatterns);
-    };
-
-    const ConditionSelector = () => (
-        <FormControl fullWidth margin="normal">
-            <InputLabel>Condition Type</InputLabel>
-            <Select
-                value={selectedCondition}
-                onChange={handleConditionChange}
-            >
-                {getAvailableFilterOptions().map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                    </MenuItem>
-                ))}
-            </Select>
-        </FormControl>
-    );
-
-    const UrlPatternInput = () => (
-        <FormControl fullWidth margin="normal">
-            <TextField
-                label="URL Pattern"
-                value={urlPatterns[0]}
-                onChange={(e) => handleUrlPatternChange(0, e.target.value)}
-                helperText="Enter URL pattern to match"
-            />
-        </FormControl>
-    );
-
-    const createAudience = async () => {
+    const createAudience = async (formData) => {
         try {
             const builder = new AudienceFilterBuilder();
-            builder.addUrlPattern(urlPatterns);
+            builder.addUrlPattern(formData.urlPatterns);
 
-            const conditionTemplate = conditions[selectedCondition];
+            const conditionTemplate = conditions[formData.condition];
             const audience = builder.build(
                 'unique-id',
-                audienceName,
-                membershipDurationDays,
-                selectedCondition
+                formData.name,
+                formData.membershipLifeSpan,
+                formData.condition
             );
 
-            // ...existing creation logic...
+            // ... existing creation logic ...
         } catch (error) {
             console.error('Error creating audience:', error);
         }
@@ -209,8 +163,8 @@ const AudienceManager = () => {
                             ref={audienceListRef}
                             properties={selectedProperties}
                             onEdit={setSelectedAudience}
-                            onDelete={(audience) => {/* implement delete */ }}
-                            key={loading ? 'loading' : 'loaded'} // Force remount when loading changes
+                            onDelete={(audience) => {/* implement delete */}}
+                            key={loading ? 'loading' : 'loaded'}
                         />
                     </Box>
                 );
@@ -226,7 +180,7 @@ const AudienceManager = () => {
                     <AudienceForm
                         audience={selectedAudience}
                         properties={selectedProperties}
-                        onSubmit={(data) => {/* implement update */ }}
+                        onSubmit={(data) => {/* implement update */}}
                     />
                 ) : (
                     <Typography>Select an audience from the list to edit</Typography>
@@ -355,8 +309,6 @@ const AudienceManager = () => {
                             </FormControl>
                         </Box>
                     )}
-                    <ConditionSelector />
-                    <UrlPatternInput />
                 </Box>
             </Paper>
 
