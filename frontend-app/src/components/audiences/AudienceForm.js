@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Box,
   TextField,
@@ -8,8 +9,6 @@ import {
   MenuItem,
   Paper
 } from '@mui/material';
-import React, { useState, useEffect, useRef } from 'react';
-
 
 const AudienceForm = ({ audience, properties, onSubmit }) => {
   const [formData, setFormData] = React.useState({
@@ -20,40 +19,10 @@ const AudienceForm = ({ audience, properties, onSubmit }) => {
     properties: audience?.properties || properties
   });
 
-   const [selectedCondition, setSelectedCondition] = useState('');
-      const [urlPatterns, setUrlPatterns] = useState(['']);
-      const [audienceName, setAudienceName] = useState('');
-      const [membershipDurationDays, setMembershipDurationDays] = useState(30);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
   };
-  const handleConditionChange = (event) => {
-    setSelectedCondition(event.target.value);
-};
-
-const handleUrlPatternChange = (index, value) => {
-    const newPatterns = [...urlPatterns];
-    newPatterns[index] = value;
-    setUrlPatterns(newPatterns);
-};
-
-const ConditionSelector = () => (
-    <FormControl fullWidth margin="normal">
-        <InputLabel>Condition Type</InputLabel>
-        <Select
-            value={selectedCondition}
-            onChange={handleConditionChange}
-        >
-            {getAvailableFilterOptions().map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                </MenuItem>
-            ))}
-        </Select>
-    </FormControl>
-);
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -74,8 +43,15 @@ const ConditionSelector = () => (
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           sx={{ mb: 2 }}
         />
-        <ConditionSelector />
-        <UrlPatternInput />
+        <TextField
+          fullWidth
+          label="Filter Expression"
+          multiline
+          rows={3}
+          value={formData.filter}
+          onChange={(e) => setFormData({ ...formData, filter: e.target.value })}
+          sx={{ mb: 2 }}
+        />
         <TextField
           fullWidth
           label="Membership Lifespan (days)"

@@ -34,7 +34,10 @@ const AudienceManager = () => {
     const [currentTab, setCurrentTab] = useState(0);
     const [selectedAudience, setSelectedAudience] = useState(null);
     const audienceListRef = useRef(null);
-   
+    const [selectedCondition, setSelectedCondition] = useState('');
+    const [urlPatterns, setUrlPatterns] = useState(['']);
+    const [audienceName, setAudienceName] = useState('');
+    const [membershipDurationDays, setMembershipDurationDays] = useState(30);
 
     useEffect(() => {
         const initializeData = async () => {
@@ -124,9 +127,42 @@ const AudienceManager = () => {
         }
     };
 
+    const handleConditionChange = (event) => {
+        setSelectedCondition(event.target.value);
+    };
 
+    const handleUrlPatternChange = (index, value) => {
+        const newPatterns = [...urlPatterns];
+        newPatterns[index] = value;
+        setUrlPatterns(newPatterns);
+    };
 
+    const ConditionSelector = () => (
+        <FormControl fullWidth margin="normal">
+            <InputLabel>Condition Type</InputLabel>
+            <Select
+                value={selectedCondition}
+                onChange={handleConditionChange}
+            >
+                {getAvailableFilterOptions().map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                    </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+    );
 
+    const UrlPatternInput = () => (
+        <FormControl fullWidth margin="normal">
+            <TextField
+                label="URL Pattern"
+                value={urlPatterns[0]}
+                onChange={(e) => handleUrlPatternChange(0, e.target.value)}
+                helperText="Enter URL pattern to match"
+            />
+        </FormControl>
+    );
 
     const createAudience = async () => {
         try {
@@ -180,20 +216,17 @@ const AudienceManager = () => {
                 );
             case 1: // Create
                 return (
-                    <>
-
-                        <AudienceForm
-                            properties={selectedProperties}
-                            onSubmit={createAudience}
-                        />
-                    </>
+                    <AudienceForm
+                        properties={selectedProperties}
+                        onSubmit={createAudience}
+                    />
                 );
             case 2: // Edit
                 return selectedAudience ? (
                     <AudienceForm
                         audience={selectedAudience}
                         properties={selectedProperties}
-                        onSubmit={createAudience}
+                        onSubmit={(data) => {/* implement update */ }}
                     />
                 ) : (
                     <Typography>Select an audience from the list to edit</Typography>
@@ -322,7 +355,8 @@ const AudienceManager = () => {
                             </FormControl>
                         </Box>
                     )}
-
+                    <ConditionSelector />
+                    <UrlPatternInput />
                 </Box>
             </Paper>
 
