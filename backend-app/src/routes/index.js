@@ -16,6 +16,8 @@ router.get('/accounts/:accountName/properties/:propertyId/audiences', listAudien
 // /api/properties/294329184/audiences/10170465508
 router.delete('/properties/:propertyId/audiences/:audienceId', deleteAudience);
 
+
+router.post('/createAudience', createAudience);
 // print the requests that are not handled
 router.use('*', (req, res) => {
   console.log('Request not handled:', req.method, req.originalUrl);

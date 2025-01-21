@@ -29,7 +29,8 @@ export const createAudience = async (FormData) => {
     console.log(FormData);
     
     const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}/audiencesw/w/w/w`,
+      `${process.env.REACT_APP_API_URL}/createAudience`,
+      FormData
     );
     return response.data;
   } catch (error) {

@@ -130,8 +130,6 @@ const AudienceManager = () => {
                 formData.membershipLifeSpan,
                 formData.condition
             );
-
-            // ... existing creation logic ...
         } catch (error) {
             console.error('Error creating audience:', error);
         }

@@ -22,6 +22,7 @@ import { getAvailableFilterOptions } from '../../utils/AudienceFilterBuilder';
 import { splitLandingPages, minifyLandingPages } from '../../utils/urlPatternUtils';
 import { createAudience } from '../../Services/audienceService';
 import { getCachedData } from '../../Services/dataService';
+import conditionsData from '../../utils/conditions.json';
 
 const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
   // Create theme based on dark mode preference
@@ -37,7 +38,10 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
     filter: audience?.filter || '',
     membershipLifeSpan: audience?.membershipLifeSpan || '30',
     properties: audience?.properties || properties,
-    conditions: audience?.conditions || [{ type: '', value: '' }],
+    conditions: audience?.conditions || [{ 
+      name: Object.keys(conditionsData)[0],
+      key: conditionsData[Object.keys(conditionsData)[0]]
+    }],
     urlPatterns: audience?.urlPatterns || [''],
     generatedPatterns: []
   });
@@ -90,9 +94,13 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
   };
 
   const addCondition = () => {
+    const firstConditionName = Object.keys(conditionsData)[0];
     setFormData({
       ...formData,
-      conditions: [...formData.conditions, { type: '', value: '' }]
+      conditions: [...formData.conditions, {
+        name: firstConditionName,
+        key: conditionsData[firstConditionName]
+      }]
     });
   };
 
@@ -129,7 +137,7 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
       setFormData(prev => ({
         ...prev,
         generatedPatterns: regexPatterns
-      }));
+      }));      
       setUrlError(false);
     } catch (error) {
       setUrlError(true);
@@ -143,7 +151,7 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
       for (const accountProperties of Object.values(propertiesMap)) {
         const property = accountProperties.find(p => p.name.endsWith(propertyId));
         if (property) {
-          return property.name;
+          return 'properties/' + propertyId;
         }
       }
     };
@@ -156,12 +164,16 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
           <FormControl fullWidth>
             <InputLabel>Condition Type</InputLabel>
             <Select
-              value={condition.type}
-              onChange={(e) => handleConditionChange(index, 'type', e.target.value)}
+              value={condition.name || ''}
+              onChange={(e) => {
+                const selectedName = e.target.value;
+                handleConditionChange(index, 'name', selectedName);
+                handleConditionChange(index, 'key', conditionsData[selectedName]);
+              }}
             >
-              {getAvailableFilterOptions().map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
+              {Object.keys(conditionsData).map((conditionName) => (
+                <MenuItem key={conditionName} value={conditionName}>
+                  {conditionName}
                 </MenuItem>
               ))}
             </Select>

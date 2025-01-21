@@ -1,0 +1,44 @@
+[
+    [
+        {
+            "clauseType": "INCLUDE",
+            "simpleFilter": {
+                "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+                "filterExpression": {
+                    "andGroup": {
+                        "filterExpressions": [
+                            {
+                                "orGroup": {
+                                    "filterExpressions": "$filterExpressions"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "clauseType": "EXCLUDE",
+            "simpleFilter": {
+                "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+                "filterExpression": {
+                    "andGroup": {
+                        "filterExpressions": [
+                            {
+                                "orGroup": {
+                                    "filterExpressions": [
+                                        {
+                                            "eventFilter": {
+                                                "eventName": "session_duration_10"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+]

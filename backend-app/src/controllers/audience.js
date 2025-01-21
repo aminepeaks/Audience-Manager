@@ -6,36 +6,55 @@ import fs from 'fs';
 export const createAudience = async (req, res) => {
   console.log('createAudience', req.body);
   try {
-    const { accountName, audienceDefinition, selectedProperties, propertyName } = req.body;
+    const { conditions, properties, generatedPattern, name, membershipLifeSpan} = req.body;
 
-    if (!accountName || !audienceDefinition) {
-      return res.status(400).send('Account name and audience definition are required');
+    if (!conditions || !properties || !name || !membershipLifeSpan) {
+      console.log('Missing required fields', !conditions, !properties, !name, !membershipLifeSpan);
+      return res.status(400).send('Missing required fields');
     }
 
-    // Fetch properties based on selection
-    let properties = selectedProperties ? selectedProperties : await client.listProperties({parent: `accounts/${accountName}`});
+    // go through the conditions and for each condition get the condition from the resources/conditions.js file
+    
 
-    const audiences = [];
+    // Create audience in parallel for all properties
+    const createPromises = properties.map(async (propertyId) => {
+      console.log('propertyId', propertyId);
+      console.log('conditions', conditions.map(condition => {
+        return condition.key;
+      }
+      )[0][0].simpleFilter.filterExpression);
+      // output the condition above in a file to see what it looks like
+      fs.writeFileSync('conditionOutput.json', JSON.stringify(conditions.map(condition => {
+        return condition.key;
+      }
+      )));
 
-    for (let property of properties) {
       const audienceRequest = {
-        parent: `accounts/${accountName}/properties/${propertyName || property.property}`,
+        parent: propertyId,
         audience: {
-          description: audienceDefinition.description,
-          name: audienceDefinition.name,
-          filter: audienceDefinition.filter,
-          membershipLifeSpan: audienceDefinition.membershipLifeSpan,
+          description: 'Audience created by the Audience Builder',
+          displayName: name,
+          filterClauses: conditions.map(condition => {
+            return condition.key;
+          }
+          )[0],
+          membershipLifeSpan: membershipLifeSpan,
         },
       };
 
       const [audience] = await client.createAudience(audienceRequest);
-      audiences.push(audience);
-    }
+      return audience;
+    });
 
+    const audiences = await Promise.all(createPromises);
     res.status(201).json(audiences);
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send('An error occurred while creating the audience');
+    console.error('Create audience error:', err);
+    res.status(500).json({
+      error: 'An error occurred while creating the audience',
+      details: err.message
+    });
   }
 };
 
@@ -85,7 +104,7 @@ export const updateAudience = async (req, res) => {
       audience: {
         description: audienceDefinition.description,
         name: audienceDefinition.name,
-        filter: audienceDefinition.filter,
+        filterClauses: audienceDefinition.filter,
         membershipLifeSpan: audienceDefinition.membershipLifeSpan,
       },
     };
