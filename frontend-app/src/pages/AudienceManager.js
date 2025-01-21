@@ -13,7 +13,8 @@ import {
     Chip,
     CircularProgress,
     Tabs,
-    Tab
+    Tab,
+    TextField
 } from '@mui/material';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CloseIcon from '@mui/icons-material/Close';
@@ -21,6 +22,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { fetchAllAccountsAndProperties, getCachedData } from '../Services/dataService';
 import AudienceList from '../components/audiences/AudienceList';
 import AudienceForm from '../components/audiences/AudienceForm';
+import { AudienceFilterBuilder, getAvailableFilterOptions } from '../utils/AudienceFilterBuilder';
+import conditions from '../utils/conditions.json';
 
 const AudienceManager = () => {
     const [loading, setLoading] = useState(true);
@@ -31,6 +34,7 @@ const AudienceManager = () => {
     const [currentTab, setCurrentTab] = useState(0);
     const [selectedAudience, setSelectedAudience] = useState(null);
     const audienceListRef = useRef(null);
+   
 
     useEffect(() => {
         const initializeData = async () => {
@@ -120,6 +124,29 @@ const AudienceManager = () => {
         }
     };
 
+
+
+
+
+    const createAudience = async () => {
+        try {
+            const builder = new AudienceFilterBuilder();
+            builder.addUrlPattern(urlPatterns);
+
+            const conditionTemplate = conditions[selectedCondition];
+            const audience = builder.build(
+                'unique-id',
+                audienceName,
+                membershipDurationDays,
+                selectedCondition
+            );
+
+            // ...existing creation logic...
+        } catch (error) {
+            console.error('Error creating audience:', error);
+        }
+    };
+
     const renderContent = () => {
         if (selectedProperties.length === 0) {
             return (
@@ -153,17 +180,20 @@ const AudienceManager = () => {
                 );
             case 1: // Create
                 return (
-                    <AudienceForm
-                        properties={selectedProperties}
-                        onSubmit={(data) => {/* implement create */ }}
-                    />
+                    <>
+
+                        <AudienceForm
+                            properties={selectedProperties}
+                            onSubmit={createAudience}
+                        />
+                    </>
                 );
             case 2: // Edit
                 return selectedAudience ? (
                     <AudienceForm
                         audience={selectedAudience}
                         properties={selectedProperties}
-                        onSubmit={(data) => {/* implement update */ }}
+                        onSubmit={createAudience}
                     />
                 ) : (
                     <Typography>Select an audience from the list to edit</Typography>
@@ -292,6 +322,7 @@ const AudienceManager = () => {
                             </FormControl>
                         </Box>
                     )}
+
                 </Box>
             </Paper>
 

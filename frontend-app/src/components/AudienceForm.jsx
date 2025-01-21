@@ -13,6 +13,7 @@ import {
   Switch,
   FormControlLabel
 } from '@mui/material';
+import { getAvailableFilterOptions } from '../utils/conditions';
 
 const AudienceForm = ({ audience, properties, onSubmit }) => {
   const [formData, setFormData] = React.useState({
@@ -23,7 +24,8 @@ const AudienceForm = ({ audience, properties, onSubmit }) => {
     filterScope: 'AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION',
     urlPatterns: audience?.urlPatterns || '',
     eventName: audience?.eventName || '',
-    exclusionDurationMode: audience?.exclusionDurationMode || 'AUDIENCE_EXCLUSION_DURATION_MODE_UNSPECIFIED'
+    exclusionDurationMode: audience?.exclusionDurationMode || 'AUDIENCE_EXCLUSION_DURATION_MODE_UNSPECIFIED',
+    conditionType: ''
   });
 
   const handleChange = (field) => (event) => {
@@ -165,6 +167,21 @@ const AudienceForm = ({ audience, properties, onSubmit }) => {
               >
                 <MenuItem value="AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION">Within Same Session</MenuItem>
                 <MenuItem value="AUDIENCE_FILTER_SCOPE_ACROSS_ALL_SESSIONS">Across All Sessions</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel>Condition Type</InputLabel>
+              <Select
+                value={formData.conditionType}
+                onChange={handleChange('conditionType')}
+              >
+                {getAvailableFilterOptions().map(option => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
