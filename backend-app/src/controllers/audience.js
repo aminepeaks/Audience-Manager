@@ -6,7 +6,7 @@ import fs from 'fs';
 export const createAudience = async (req, res) => {
   console.log('createAudience', req.body);
   try {
-    const { accountName, audienceDefinition, selectedProperties } = req.body;
+    const { accountName, audienceDefinition, selectedProperties, propertyName } = req.body;
 
     if (!accountName || !audienceDefinition) {
       return res.status(400).send('Account name and audience definition are required');
@@ -19,7 +19,7 @@ export const createAudience = async (req, res) => {
 
     for (let property of properties) {
       const audienceRequest = {
-        parent: `accounts/${accountName}/properties/${property.property}`,
+        parent: `accounts/${accountName}/properties/${propertyName || property.property}`,
         audience: {
           description: audienceDefinition.description,
           name: audienceDefinition.name,

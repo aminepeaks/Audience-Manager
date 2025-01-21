@@ -11,12 +11,17 @@ import {
   IconButton,
   useTheme,
   ThemeProvider,
-  createTheme
+  createTheme,
+  CircularProgress,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAvailableFilterOptions } from '../../utils/AudienceFilterBuilder';
 import { splitLandingPages, minifyLandingPages } from '../../utils/urlPatternUtils';
+import { createAudience } from '../../Services/audienceService';
+import { getCachedData } from '../../Services/dataService';
 
 const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
   // Create theme based on dark mode preference
@@ -38,10 +43,44 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
   });
 
   const [urlError, setUrlError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!formData.name) return false;
+    if (!formData.urlPatterns.length) return false;
+    if (!formData.conditions.length) return false;
+    if (!formData.membershipLifeSpan) return false;
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    if (!validateForm()) {
+      setError('Please fill all required fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      var propertiesList = [];
+      for (var i = 0; i < formData.properties.length; i++) {
+        propertiesList.push(getPropertyNamePath(formData.properties[i]));
+      }
+      formData.properties = propertiesList;
+      
+      const result = await createAudience(formData);
+      setSuccess(true);
+      onSubmit(result);
+      
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConditionChange = (index, field, value) => {
@@ -97,6 +136,18 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
       console.error('Error generating patterns:', error);
     }
   };
+    const getPropertyNamePath = (propertyPath) => {
+      const { properties: propertiesMap } = getCachedData();
+      const propertyId = propertyPath.split('/').pop();
+      
+      for (const accountProperties of Object.values(propertiesMap)) {
+        const property = accountProperties.find(p => p.name.endsWith(propertyId));
+        if (property) {
+          return property.name;
+        }
+      }
+    };
+  
 
   const MultipleConditionsSelector = () => (
     <Box sx={{ mb: 2 }}>
@@ -216,9 +267,33 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
             onChange={(e) => setFormData({ ...formData, membershipLifeSpan: e.target.value })}
             sx={{ mb: 2 }}
           />
-          <Button type="submit" variant="contained">
-            {audience ? 'Update' : 'Create'} Audience
+          <Button 
+            type="submit" 
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : audience ? 'Update' : 'Create'} Audience
           </Button>
+
+          <Snackbar 
+            open={!!error} 
+            autoHideDuration={6000} 
+            onClose={() => setError(null)}
+          >
+            <Alert severity="error">{error}</Alert>
+          </Snackbar>
+
+          <Snackbar
+            open={success}
+            autoHideDuration={6000}
+            onClose={() => setSuccess(false)}
+          >
+            <Alert severity="success">
+              Audience successfully {audience ? 'updated' : 'created'}!
+            </Alert>
+          </Snackbar>
         </Box>
       </Paper>
     </ThemeProvider>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { data } from 'react-router-dom';
 
 export const fetchAudiencesForProperty = async (accountName, propertyId) => {
   try {
@@ -23,16 +24,15 @@ export const deleteAudience = async (propertyId, audiencename) => {
   }
 };
 
-export const createAudience = async (accountName, audienceData) => {
+export const createAudience = async (FormData) => {
   try {
-    console.log('createAudience', accountName, audienceData);
+    console.log(FormData);
+    
     const response = await axios.post(
-      `${process.env.REACT_APP_API_URL}/accounts/${accountName}/audiences`,
-      audienceData
+      `${process.env.REACT_APP_API_URL}/audiencesw/w/w/w`,
     );
     return response.data;
   } catch (error) {
-    
     console.error('Error creating audience:', error);
     throw error;
   }
