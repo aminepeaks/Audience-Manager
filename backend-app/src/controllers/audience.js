@@ -2,59 +2,80 @@ import { client } from "../config/oauth.js";
 import fs from 'fs';
 
 
+const createAudienceObject = (conditions, generatedPatterns, name, membershipLifeSpan) => {
+  if (!conditions?.[0]?.key || !generatedPatterns?.[0]) {
+    throw new Error('Invalid conditions or patterns');
+  }
+
+  const baseFilterClause = conditions[0].key;
+  const patternExpression = {
+    dimensionOrMetricFilter: {
+      fieldName: "landingPagePlusQueryString",
+      stringFilter: {
+        matchType: "FULL_REGEXP",
+        value: generatedPatterns[0]
+      },
+      atAnyPointInTime: true
+    }
+  };
+
+  const processedFilterClauses = baseFilterClause.map(clause => {
+    const filterExp = JSON.stringify(clause)
+      .replace('"$filterExpressions"', JSON.stringify([patternExpression]));
+    return JSON.parse(filterExp);
+  });
+
+  return {
+    description: 'Audience created by the Audience Builder',
+    displayName: name,
+    filterClauses: processedFilterClauses,
+    membershipDurationDays : membershipLifeSpan
+  };
+};
+
 // **Create Audience**
 export const createAudience = async (req, res) => {
-  console.log('createAudience', req.body);
   try {
-    const { conditions, properties, generatedPattern, name, membershipLifeSpan} = req.body;
+    const { conditions, properties, generatedPatterns, name, membershipLifeSpan } = req.body;
 
-    if (!conditions || !properties || !name || !membershipLifeSpan) {
-      console.log('Missing required fields', !conditions, !properties, !name, !membershipLifeSpan);
-      return res.status(400).send('Missing required fields');
+    // Validate required fields
+    const requiredFields = { conditions, properties, name, membershipLifeSpan };
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingFields.length) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        fields: missingFields
+      });
     }
 
-    // go through the conditions and for each condition get the condition from the resources/conditions.js file
-    
+    // Create audiences in parallel
+    const audiences = await Promise.all(
+      properties.map(async (propertyId) => {
+        const formattedPropertyId = propertyId.startsWith('properties/') 
+          ? propertyId 
+          : `properties/${propertyId}`;
 
-    // Create audience in parallel for all properties
-    const createPromises = properties.map(async (propertyId) => {
-      console.log('propertyId', propertyId);
-      console.log('conditions', conditions.map(condition => {
-        return condition.key;
-      }
-      )[0][0].simpleFilter.filterExpression);
-      // output the condition above in a file to see what it looks like
-      fs.writeFileSync('conditionOutput.json', JSON.stringify(conditions.map(condition => {
-        return condition.key;
-      }
-      )));
+        const audienceRequest = {
+          parent: formattedPropertyId,
+          audience: createAudienceObject(conditions, generatedPatterns, name, membershipLifeSpan)
+        };
 
-      const audienceRequest = {
-        parent: propertyId,
-        audience: {
-          description: 'Audience created by the Audience Builder',
-          displayName: name,
-          filterClauses: conditions.map(condition => {
-            return condition.key;
-          }
-          )[0],
-          membershipLifeSpan: membershipLifeSpan,
-        },
-      };
+        // fs.writeFileSync('audienceRequest.json', JSON.stringify(audienceRequest, null, 2));
 
-      const [audience] = await client.createAudience(audienceRequest);
-      return audience;
-    });
+        const [audience] = await client.createAudience(audienceRequest);
+        return audience;
+      })
+    );
 
-    const audiences = await Promise.all(createPromises);
-    res.status(201).json(audiences);
+    return res.status(201).json(audiences);
 
-  } catch (err) {
-    console.error('Create audience error:', err);
-    res.status(500).json({
-      error: 'An error occurred while creating the audience',
-      details: err.message
-    });
+  } catch (error) {
+    const errorMessage = error.message || 'An error occurred while creating the audience';
+    console.error('Create audience error:', error);
+    return res.status(500).json({ error: errorMessage });
   }
 };
 

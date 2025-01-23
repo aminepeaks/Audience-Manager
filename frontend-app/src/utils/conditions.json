@@ -70,11 +70,6 @@
             "filterExpressions": [
               {
                 "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
-              {
-                "orGroup": {
                   "filterExpressions": [
                     {
                       "eventFilter": {
@@ -98,11 +93,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -128,11 +119,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -158,11 +145,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -188,11 +171,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -218,11 +197,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -248,11 +223,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -278,11 +249,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -308,11 +275,7 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": "$filterExpressions"
-                }
-              },
+
               {
                 "orGroup": {
                   "filterExpressions": [

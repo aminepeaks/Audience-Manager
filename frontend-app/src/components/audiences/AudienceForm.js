@@ -89,7 +89,21 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
 
   const handleConditionChange = (index, field, value) => {
     const newConditions = [...formData.conditions];
-    newConditions[index] = { ...newConditions[index], [field]: value };
+    
+    if (field === 'name') {
+      // When name changes, update both name and key
+      newConditions[index] = {
+        name: value,
+        key: conditionsData[value]
+      };
+    } else {
+      // For other fields
+      newConditions[index] = { 
+        ...newConditions[index], 
+        [field]: value 
+      };
+    }
+    
     setFormData({ ...formData, conditions: newConditions });
   };
 
@@ -164,12 +178,8 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
           <FormControl fullWidth>
             <InputLabel>Condition Type</InputLabel>
             <Select
-              value={condition.name || ''}
-              onChange={(e) => {
-                const selectedName = e.target.value;
-                handleConditionChange(index, 'name', selectedName);
-                handleConditionChange(index, 'key', conditionsData[selectedName]);
-              }}
+              value={condition.name}
+              onChange={(e) => handleConditionChange(index, 'name', e.target.value)}
             >
               {Object.keys(conditionsData).map((conditionName) => (
                 <MenuItem key={conditionName} value={conditionName}>
