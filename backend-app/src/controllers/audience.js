@@ -45,7 +45,7 @@ const createAudienceObject = (conditions, generatedPatterns, name, membershipLif
 export const createAudience = async (req, res) => {
   try {
     const { conditions, properties, generatedPatterns, name, membershipLifeSpan, description } = req.body;
-
+    console.log('createAudience', conditions, properties, generatedPatterns, name, membershipLifeSpan, description);
     // Validate required fields
     const requiredFields = { conditions, properties, name, membershipLifeSpan };
     const missingFields = Object.entries(requiredFields)
@@ -94,7 +94,7 @@ export const listAudiences = async (req, res) => {
     const { propertyId } = req.params;
     const formattedPropertyId = propertyId.startsWith('properties/') ? 
       propertyId : `properties/${propertyId}`;
-
+    console.log('formattedPropertyId', formattedPropertyId);
     const [audiences] = await client.listAudiences({
       parent: formattedPropertyId
     });
@@ -176,6 +176,7 @@ export const listAudiencesDataApi = async (req, res) => {
     const formattedPropertyId = propertyId.startsWith('properties/')
       ? propertyId
       : `properties/${propertyId}`;
+    console.log('formattedPropertyId', formattedPropertyId);
     
     const audienceIterator = dataClient.listAudienceExportsAsync({
       parent: formattedPropertyId,

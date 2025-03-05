@@ -1,29 +1,68 @@
+import axios from 'axios';
+
 export class AudienceBuilderService {
   static async buildAndCreateAudience(formData) {
     try {
       // Validate form data
       this.validateFormData(formData);
-
-      // Build audience object
-      const audienceObject = this.buildAudienceObject(formData);
-
-      // Create audience through API
-      const response = await fetch('/api/audiences', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(audienceObject)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create audience');
+  
+      // Extract property info from formData
+      let propertyId, accountName;
+      
+      // Add defensive extraction of property path information
+      if (formData.properties && formData.properties.length > 0) {
+        const propertyPath = formData.properties[0];
+        
+        // Check if it's a full path or just an ID
+        if (propertyPath.includes('/')) {
+          const pathParts = propertyPath.split('/');
+          propertyId = pathParts.pop(); // Get the last part as propertyId
+          
+          // Look for "accounts" in the path to find the account name
+          const accountsIndex = pathParts.indexOf('accounts');
+          if (accountsIndex !== -1 && accountsIndex + 1 < pathParts.length) {
+            accountName = pathParts[accountsIndex + 1];
+          }
+        } else {
+          // If it's just an ID, use it directly
+          propertyId = propertyPath;
+          
+          // Try to get account from formData if available
+          accountName = formData.accountName || 'default'; 
+        }
+        
+        // Validate we have what we need
+        if (!propertyId) {
+          throw new Error('Could not extract property ID from provided data');
+        }
+      } else {
+        throw new Error('No properties selected for audience creation');
       }
 
-      return await response.json();
+      console.log(`Creating audience for property ${propertyId}`);
+  
+      // Create the request payload in the format expected by the backend
+      const requestPayload = {
+        name: formData.name,
+        description: formData.description || 'Audience created by the Audience Builder',
+        membershipLifeSpan: parseInt(formData.membershipLifeSpan, 10),
+        conditions: Array.isArray(formData.conditions) ? formData.conditions : [formData.conditions],
+        generatedPatterns: Array.isArray(formData.generatedPatterns) 
+          ? formData.generatedPatterns 
+          : [formData.generatedPatterns],
+        // Include properties in the payload since it's not in the URL path anymore
+        properties: [propertyId]
+      };
+      
+      // Use the /createAudience endpoint instead
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/createAudience`,
+        requestPayload
+      );
+      
+      return response.data;
     } catch (error) {
-      throw new Error(`Failed to build audience: ${error.message}`);
+      throw new Error(`Failed to build audiencee: ${error.message}`);
     }
   }
 
@@ -40,31 +79,5 @@ export class AudienceBuilderService {
     if (missingFields.length > 0) {
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
-  }
-
-  static buildAudienceObject(formData) {
-    const { 
-      name, 
-      description = 'Audience created by the Audience Builder', 
-      membershipLifeSpan, 
-      conditions, 
-      generatedPatterns, 
-      properties 
-    } = formData;
-    
-    // Make sure conditions is formatted as expected by the backend
-    // The backend expects an array of condition names (strings)
-    const processedConditions = Array.isArray(conditions) 
-      ? conditions 
-      : [conditions];
-    
-    return {
-      name,
-      description,
-      membershipLifeSpan: parseInt(membershipLifeSpan, 10),
-      conditions: processedConditions,
-      generatedPatterns: Array.isArray(generatedPatterns) ? generatedPatterns : [generatedPatterns],
-      properties: Array.isArray(properties) ? properties : [properties]
-    };
   }
 }

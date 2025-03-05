@@ -1,4 +1,4 @@
-import conditions from './conditions.json' assert { type: 'json' };
+import conditions from '../../resources/conditions.json' with {type: 'json'};
 
 const replacePlaceholderExpressions = (filterClauses, filterExpressions) => {
   return filterClauses.map((filterClause) => {

@@ -1,49 +1,10 @@
 {
   "conditions": [
     {
-      "name": "ALL_SESSIONS",
+      "name": "MORE_THAN_10_SECONDS",
       "key": [
         {
           "clauseType": "INCLUDE",
-          "simpleFilter": {
-            "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-            "filterExpression": {
-              "andGroup": {
-                "filterExpressions": [
-                  {
-                    "orGroup": {
-                      "filterExpressions": "$filterExpressions"
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "LESS_THAN_10_SECONDS",
-      "key": [
-        {
-          "clauseType": "INCLUDE",
-          "simpleFilter": {
-            "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-            "filterExpression": {
-              "andGroup": {
-                "filterExpressions": [
-                  {
-                    "orGroup": {
-                      "filterExpressions": "$filterExpressions"
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        },
-        {
-          "clauseType": "EXCLUDE",
           "simpleFilter": {
             "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
             "filterExpression": {
@@ -66,39 +27,11 @@
           }
         }
       ]
-    },
-    {
-      "name": "MORE_THAN_30_SECONDS",
-      "key": [
-        {
-          "clauseType": "INCLUDE",
-          "simpleFilter": {
-            "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-            "filterExpression": {
-              "andGroup": {
-                "filterExpressions": [
-                  {
-                    "orGroup": {
-                      "filterExpressions": [
-                        {
-                          "eventFilter": {
-                            "eventName": "session_duration_30"
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
-      ]
     }
   ],
   "generatedPatterns": [
     "^(/audience-manager)$"
   ],
-  "name": "test audience",
-  "membershipLifeSpan": "30"
+  "name": "test",
+  "membershipLifeSpan": 30
 }

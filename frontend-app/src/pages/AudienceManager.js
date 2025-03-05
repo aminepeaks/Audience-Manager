@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -18,45 +18,53 @@ import {
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CloseIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { fetchAllAccountsAndProperties, getCachedData } from '../Services/dataService';
+
+// Import custom hooks instead of direct services
+import { useAccounts } from '../hooks/useAccounts';
+import { useProperties } from '../hooks/useProperties';
+import { useAudiences } from '../hooks/useAudiences';
+
 import AudienceList from '../components/audiences/AudienceList';
 import AudienceForm from '../components/audiences/AudienceForm';
-import { AudienceFilterBuilder } from '../utils/AudienceFilterBuilder';
-import conditions from '../utils/conditions.json';
 
 const AudienceManager = () => {
-    const [loading, setLoading] = useState(true);
-    const [accounts, setAccounts] = useState([]);
+    // State from UML
     const [selectedAccounts, setSelectedAccounts] = useState([]);
-    const [propertiesMap, setPropertiesMap] = useState({});
     const [selectedProperties, setSelectedProperties] = useState([]);
     const [currentTab, setCurrentTab] = useState(0);
     const [selectedAudience, setSelectedAudience] = useState(null);
-    const audienceListRef = useRef(null);
 
+    // Use custom hooks instead of direct state management
+    const {
+        accounts,
+        loading: accountsLoading,
+        error: accountsError,
+        fetchAccounts
+    } = useAccounts();
+    console.log(accounts);
+
+    // Update the useProperties hook call to include selectedAccounts
+    const {
+        properties: propertiesMap,
+        loading: propertiesLoading,
+        error: propertiesError,
+        fetchProperties
+    } = useProperties(selectedAccounts);
+    console.log(propertiesMap);
+
+    const {
+        audiences,
+        loading: audienceLoading,
+        error: audienceError,
+        fetchAudiences,
+        createAudience,
+        deleteAudience
+    } = useAudiences(selectedProperties);
+
+    // Fetch accounts on component mount
     useEffect(() => {
-        const initializeData = async () => {
-            try {
-                const cachedData = getCachedData();
-                if (cachedData.accounts && cachedData.properties) {
-                    setAccounts(cachedData.accounts);
-                    setPropertiesMap(cachedData.properties);
-                    setLoading(false);
-                    fetchAllAccountsAndProperties();
-                    return;
-                }
-                const data = await fetchAllAccountsAndProperties();
-                setAccounts(data.accounts);
-                setPropertiesMap(data.properties);
-            } catch (error) {
-                console.error('Error initializing data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initializeData();
-    }, []);
+        fetchAccounts();
+    }, [fetchAccounts]);
 
     const handleAccountChange = (event) => {
         const selectedAccountIds = event.target.value;
@@ -70,7 +78,7 @@ const AudienceManager = () => {
     };
 
     const handleRemoveAccount = (accountToRemove) => {
-        setSelectedAccounts(prev => 
+        setSelectedAccounts(prev =>
             prev.filter(account => account !== accountToRemove)
         );
         setSelectedProperties([]);
@@ -101,7 +109,7 @@ const AudienceManager = () => {
     };
 
     const handleRemoveProperty = (propertyToRemove) => {
-        setSelectedProperties(prev => 
+        setSelectedProperties(prev =>
             prev.filter(property => property !== propertyToRemove)
         );
     };
@@ -111,27 +119,31 @@ const AudienceManager = () => {
         setSelectedAudience(null);
     };
 
+    const handleEdit = (audience) => {
+        setSelectedAudience(audience);
+        setCurrentTab(2); // Switch to edit tab
+    };
+
     const handleRefreshAudiences = () => {
         setSelectedAudience(null);
         if (currentTab === 0) {
-            audienceListRef.current?.fetchAudiences();
+            fetchAudiences();
         }
     };
 
-    const createAudience = async (formData) => {
+    const handleDeleteAudience = async (propertyId, audienceName) => {
         try {
-            const builder = new AudienceFilterBuilder();
-            builder.addUrlPattern(formData.urlPatterns);
-
-            const conditionTemplate = conditions[formData.condition];
-            const audience = builder.build(
-                'unique-id',
-                formData.name,
-                formData.membershipLifeSpan,
-                formData.condition
-            );
+            await deleteAudience(propertyId, audienceName);
         } catch (error) {
-            console.error('Error creating audience:', error);
+            console.error('Error deleting audience:', error);
+        }
+    };
+
+    const handleSubmitAudience = async (formData) => {
+        try {
+            await createAudience(formData);
+        } catch (error) {
+            console.error('Error creating/updating audience:', error);
         }
     };
 
@@ -153,16 +165,19 @@ const AudienceManager = () => {
                                 startIcon={<RefreshIcon />}
                                 onClick={handleRefreshAudiences}
                                 variant="outlined"
+                                disabled={audienceLoading}
                             >
-                                Refresh Audiences
+                                {audienceLoading ? 'Refreshing...' : 'Refresh Audiences'}
                             </Button>
                         </Box>
                         <AudienceList
-                            ref={audienceListRef}
+                            audiences={audiences}
+                            loading={audienceLoading}
+                            error={audienceError}
                             properties={selectedProperties}
-                            onEdit={setSelectedAudience}
-                            onDelete={(audience) => {/* implement delete */}}
-                            key={loading ? 'loading' : 'loaded'}
+                            onEdit={handleEdit}
+                            onDelete={handleDeleteAudience}
+                            onRefresh={fetchAudiences}
                         />
                     </Box>
                 );
@@ -170,7 +185,7 @@ const AudienceManager = () => {
                 return (
                     <AudienceForm
                         properties={selectedProperties}
-                        onSubmit={createAudience}
+                        onSubmit={handleSubmitAudience}
                     />
                 );
             case 2: // Edit
@@ -178,7 +193,7 @@ const AudienceManager = () => {
                     <AudienceForm
                         audience={selectedAudience}
                         properties={selectedProperties}
-                        onSubmit={(data) => {/* implement update */}}
+                        onSubmit={handleSubmitAudience}
                     />
                 ) : (
                     <Typography>Select an audience from the list to edit</Typography>
@@ -187,6 +202,8 @@ const AudienceManager = () => {
                 return null;
         }
     };
+
+    const isLoading = accountsLoading || propertiesLoading;
 
     return (
         <Box sx={{ p: 3 }}>
@@ -205,14 +222,15 @@ const AudienceManager = () => {
                             renderValue={(selected) => (
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                     {selected.map((value) => {
-                                        const account = accounts.find(acc => acc.name === value);
+                                        const account = accounts && Array.isArray(accounts) ?
+                                            accounts.find(acc => acc.name === value) : null;
                                         return (
                                             <Chip
                                                 key={value}
                                                 label={account ? account.displayName : value}
                                                 onDelete={() => handleRemoveAccount(value)}
                                                 deleteIcon={
-                                                    <CloseIcon 
+                                                    <CloseIcon
                                                         onMouseDown={(event) => {
                                                             event.stopPropagation();
                                                         }}
@@ -224,12 +242,15 @@ const AudienceManager = () => {
                                 </Box>
                             )}
                         >
-                            {accounts.map((account) => (
+                            {/* Add defensive check before calling map */}
+                            {Array.isArray(accounts) ? accounts.map((account) => (
                                 <MenuItem key={account.name} value={account.name}>
                                     <Checkbox checked={selectedAccounts.indexOf(account.name) > -1} />
                                     <ListItemText primary={account.displayName} />
                                 </MenuItem>
-                            ))}
+                            )) : (
+                                <MenuItem disabled>No accounts available</MenuItem>
+                            )}
                         </Select>
                     </FormControl>
 
@@ -238,13 +259,13 @@ const AudienceManager = () => {
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                 <Typography variant="h6">Select Properties</Typography>
                                 <Box>
-                                    <Button 
+                                    <Button
                                         onClick={handleSelectAllProperties}
                                         sx={{ mr: 1 }}
                                     >
                                         Select All Properties
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handleClearAllAccounts}
                                         startIcon={<ClearAllIcon />}
                                         color="secondary"
@@ -271,7 +292,7 @@ const AudienceManager = () => {
                                                         label={property ? property.displayName : value}
                                                         onDelete={() => handleRemoveProperty(value)}
                                                         deleteIcon={
-                                                            <CloseIcon 
+                                                            <CloseIcon
                                                                 onMouseDown={(event) => {
                                                                     event.stopPropagation();
                                                                 }}
@@ -323,7 +344,7 @@ const AudienceManager = () => {
                 </Paper>
             )}
 
-            {loading && (
+            {isLoading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
                     <CircularProgress />
                 </Box>

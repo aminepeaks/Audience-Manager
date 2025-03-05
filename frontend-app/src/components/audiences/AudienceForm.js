@@ -16,6 +16,7 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAvailableFilterOptions } from '../../utils/AudienceFilterBuilder';
@@ -161,6 +162,15 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
       }
     };
   
+  // Add function to handle closing error messages
+  const handleCloseError = () => {
+    setError(null);
+  };
+
+  // Add function to handle closing success messages
+  const handleCloseSuccess = () => {
+    setSuccess(false);
+  };
 
   const MultipleConditionsSelector = () => (
     <Box sx={{ mb: 2 }}>
@@ -293,17 +303,46 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
           <Snackbar 
             open={!!error} 
             autoHideDuration={6000} 
-            onClose={() => setError(null)}
+            onClose={handleCloseError}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+
           >
-            <Alert severity="error">{error}</Alert>
+            <Alert 
+              severity="error" 
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  onClick={handleCloseError}
+                >
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+            >
+              {error}
+            </Alert>
           </Snackbar>
 
           <Snackbar
             open={success}
             autoHideDuration={6000}
-            onClose={() => setSuccess(false)}
+            onClose={handleCloseSuccess}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           >
-            <Alert severity="success">
+            <Alert 
+              severity="success"
+              action={
+                <IconButton
+                  aria-label="close"
+                  color="inherit"
+                  size="small"
+                  onClick={handleCloseSuccess}
+                >
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+            >
               Audience successfully {audience ? 'updated' : 'created'}!
             </Alert>
           </Snackbar>

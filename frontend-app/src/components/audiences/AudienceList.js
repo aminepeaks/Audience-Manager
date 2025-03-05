@@ -1,4 +1,4 @@
-import React, { useState, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   List,
   ListItem,
@@ -19,13 +19,20 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { fetchAudiencesForProperty, deleteAudience } from '../../Services/audienceService';
+import CloseIcon from '@mui/icons-material/Close';
+
 import { getCachedData } from '../../Services/dataService';
 
-const AudienceList = ({ properties, onEdit }, ref) => {
-  const [loading, setLoading] = useState(false);
+const AudienceList = ({ 
+  audiences = [], 
+  loading = false, 
+  error = null,
+  onEdit, 
+  onDelete,
+  onRefresh,
+  properties
+}) => {
   const [groupedAudiences, setGroupedAudiences] = useState({});
-  const [error, setError] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     audience: null,
@@ -41,70 +48,106 @@ const AudienceList = ({ properties, onEdit }, ref) => {
     failed: []
   });
 
-  const getPropertyDisplayName = (propertyPath) => {
-    const { properties: propertiesMap } = getCachedData();
-    const propertyId = propertyPath.split('/').pop();
-    
-    // Search through all properties in the cache to find matching display name
-    for (const accountProperties of Object.values(propertiesMap)) {
-      const property = accountProperties.find(p => p.name.endsWith(propertyId));
-      if (property) {
-        return property.displayName;
+  // Defensive property display name function
+  const getPropertyDisplayName = useMemo(() => {
+    const cachedData = getCachedData();
+    const propertiesMap = cachedData?.properties || {};
+
+    return (propertyPath) => {
+      try {
+        if (!propertyPath) return 'Unknown Property';
+
+        const propertyId = propertyPath.split('/').pop();
+        
+        // Defensive check against empty or malformed propertiesMap
+        if (!propertiesMap || Object.keys(propertiesMap).length === 0) {
+          console.warn('Properties map is empty or undefined');
+          return propertyId;
+        }
+
+        // Iterate through all accounts and their properties
+        for (const [accountName, accountProperties] of Object.entries(propertiesMap)) {
+          // Defensive check for each account's properties
+          if (!Array.isArray(accountProperties)) {
+            console.warn(`Invalid properties for account: ${accountName}`, accountProperties);
+            continue;
+          }
+
+          // Find property that ends with the extracted ID
+          const matchedProperty = accountProperties.find(p => 
+            p?.name && p.name.endsWith(propertyId)
+          );
+
+          if (matchedProperty) {
+            return matchedProperty.displayName || matchedProperty.name || propertyId;
+          }
+        }
+
+        // Fallback if no match found
+        console.warn(`No matching property found for path: ${propertyPath}`);
+        return propertyId;
+      } catch (error) {
+        console.error('Error in getPropertyDisplayName:', error);
+        return 'Error retrieving property name';
       }
-    }
-    return propertyPath.split('/').pop(); // Fallback to ID if display name not found
-  };
+    };
+  }, []); // No dependencies to ensure stability
 
-  const fetchAllAudiences = async () => {
-    if (!properties || properties.length === 0) {
-      return;
-    }
+  // Prepare grouped audiences with extensive error handling
+  const prepareGroupedAudiences = useMemo(() => {
+    if (!audiences || audiences.length === 0) return {};
 
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const audiencesPromises = properties.map(property => {
-        const [accountName, propertyId] = property.split('/').slice(-2);
-        return fetchAudiencesForProperty(accountName, propertyId)
-          .then(audiences => audiences.map(audience => ({
-            ...audience,
-            sourceProperty: property,
-            propertyDisplayName: getPropertyDisplayName(property)
-          })));
-      });
+    const propertyNameResolver = getPropertyDisplayName;
 
-      const allAudiences = await Promise.all(audiencesPromises);
-      const flatAudiences = allAudiences.flat();
+    return audiences.reduce((acc, audience) => {
+      try {
+        // Defensive checks
+        if (!audience || !audience.displayName) {
+          console.warn('Invalid audience object', audience);
+          return acc;
+        }
 
-      const grouped = flatAudiences.reduce((acc, audience) => {
         const key = audience.displayName;
+        
+        // Safely resolve property display name
+        const propertyDisplayName = audience.propertyDisplayName || 
+          (audience.sourceProperty 
+            ? propertyNameResolver(audience.sourceProperty) 
+            : 'Unknown Source');
+
         if (!acc[key]) {
           acc[key] = {
             ...audience,
             sources: [{
-              path: audience.sourceProperty,
-              displayName: audience.propertyDisplayName
+              path: audience.sourceProperty || 'unknown',
+              displayName: propertyDisplayName
             }]
           };
         } else {
           acc[key].sources.push({
-            path: audience.sourceProperty,
-            displayName: audience.propertyDisplayName
+            path: audience.sourceProperty || 'unknown',
+            displayName: propertyDisplayName
           });
         }
         return acc;
-      }, {});
+      } catch (error) {
+        console.error('Error processing audience:', error);
+        return acc;
+      }
+    }, {});
+  }, [audiences, getPropertyDisplayName]);
 
-      setGroupedAudiences(grouped);
-    } catch (error) {
-      console.error('Error fetching audiences:', error);
-      setError('Failed to fetch audiences');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Update grouped audiences with minimal state changes
+  useEffect(() => {
+    setGroupedAudiences(prevGrouped => {
+      const newGrouped = prepareGroupedAudiences;
+      
+      // Only update if there's an actual change
+      const hasChanged = JSON.stringify(prevGrouped) !== JSON.stringify(newGrouped);
+      
+      return hasChanged ? newGrouped : prevGrouped;
+    });
+  }, [prepareGroupedAudiences]);
   const handleDeleteClick = (audience) => {
     setDeleteDialog({
       open: true,
@@ -133,7 +176,6 @@ const AudienceList = ({ properties, onEdit }, ref) => {
     for (let i = 0; i < audience.sources.length; i++) {
       const source = audience.sources[i];
       const [accountName, propertyId] = source.path.split('/').slice(-2);
-      console.log('Deleting audience:', audience.name, 'from property:', propertyId);
       
       setDeleteDialog(prev => ({
         ...prev,
@@ -145,7 +187,7 @@ const AudienceList = ({ properties, onEdit }, ref) => {
       }));
 
       try {
-        await deleteAudience(propertyId, audience.name);
+        await onDelete(propertyId, audience.name);
         setDeleteStatus(prev => ({
           ...prev,
           success: [...prev.success, source.displayName]
@@ -158,8 +200,17 @@ const AudienceList = ({ properties, onEdit }, ref) => {
       }
     }
 
-    // After all deletions, refresh the audience list
-    await fetchAllAudiences();
+    if (onRefresh) {
+      await onRefresh();
+    }
+  };
+
+  const handleCloseDeletionMessage = () => {
+    setDeleteStatus({
+      show: false,
+      success: [],
+      failed: []
+    });
   };
 
   const renderDeleteDialog = () => (
@@ -194,13 +245,39 @@ const AudienceList = ({ properties, onEdit }, ref) => {
             </Box>
             
             {deleteStatus.success.length > 0 && (
-              <Alert severity="success" sx={{ mb: 1 }}>
+              <Alert 
+                severity="success" 
+                sx={{ mb: 1 }}
+                action={
+                  <IconButton
+                    aria-label="close"
+                    color="inherit"
+                    size="small"
+                    onClick={handleCloseDeletionMessage}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                }
+              >
                 Successfully deleted from: {deleteStatus.success.join(', ')}
               </Alert>
             )}
             
             {deleteStatus.failed.length > 0 && (
-              <Alert severity="error" sx={{ mb: 1 }}>
+              <Alert 
+                severity="error" 
+                sx={{ mb: 1 }}
+                action={
+                  <IconButton
+                    aria-label="close"
+                    color="inherit"
+                    size="small"
+                    onClick={handleCloseDeletionMessage}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                }
+              >
                 Failed to delete from: {deleteStatus.failed.join(', ')}
               </Alert>
             )}
@@ -227,10 +304,6 @@ const AudienceList = ({ properties, onEdit }, ref) => {
     </Dialog>
   );
 
-  useImperativeHandle(ref, () => ({
-    fetchAudiences: fetchAllAudiences
-  }));
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -250,7 +323,7 @@ const AudienceList = ({ properties, onEdit }, ref) => {
   if (Object.keys(groupedAudiences).length === 0) {
     return (
       <Typography sx={{ p: 2 }}>
-        Click the refresh button to load audiences for the selected properties
+        No audiences found for the selected properties.
       </Typography>
     );
   }
@@ -259,15 +332,7 @@ const AudienceList = ({ properties, onEdit }, ref) => {
     <>
       <List>
         {Object.values(groupedAudiences).map((audience) => (
-          <ListItem
-            key={audience.displayName}
-            divider
-            sx={{
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
-              },
-            }}
-          >
+          <ListItem key={audience.displayName} divider>
             <ListItemText
               primary={audience.displayName}
               secondary={
@@ -313,4 +378,4 @@ const AudienceList = ({ properties, onEdit }, ref) => {
   );
 };
 
-export default forwardRef(AudienceList);
+export default AudienceList;
