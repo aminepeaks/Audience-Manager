@@ -1,37 +1,88 @@
 {
-  "conditions": [
-    {
-      "name": "MORE_THAN_10_SECONDS",
-      "key": [
-        {
-          "clauseType": "INCLUDE",
-          "simpleFilter": {
-            "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-            "filterExpression": {
-              "andGroup": {
-                "filterExpressions": [
-                  {
-                    "orGroup": {
-                      "filterExpressions": [
-                        {
-                          "eventFilter": {
-                            "eventName": "session_duration_10"
-                          }
+  "parent": "properties/294329184",
+  "audience": {
+    "displayName": "test5",
+    "description": "Audience created by GA4 Audience Manager for test5",
+    "membershipDurationDays": 30,
+    "filterClauses": [
+      {
+        "clauseType": "INCLUDE",
+        "simpleFilter": {
+          "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+          "filterExpression": {
+            "andGroup": {
+              "filterExpressions": [
+                {
+                  "orGroup": {
+                    "filterExpressions": [
+                      {
+                        "dimensionOrMetricFilter": {
+                          "fieldName": "landingPagePlusQueryString",
+                          "stringFilter": {
+                            "matchType": "FULL_REGEXP",
+                            "value": "^(/audience-manager)$"
+                          },
+                          "atAnyPointInTime": true
                         }
-                      ]
-                    }
+                      }
+                    ]
                   }
-                ]
-              }
+                },
+                {
+                  "orGroup": {
+                    "filterExpressions": [
+                      {
+                        "eventFilter": {
+                          "eventName": "buy_now_retailer"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           }
         }
-      ]
-    }
-  ],
-  "generatedPatterns": [
-    "^(/audience-manager)$"
-  ],
-  "name": "test",
-  "membershipLifeSpan": 30
+      },
+      {
+        "clauseType": "INCLUDE",
+        "simpleFilter": {
+          "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+          "filterExpression": {
+            "andGroup": {
+              "filterExpressions": [
+                {
+                  "orGroup": {
+                    "filterExpressions": [
+                      {
+                        "dimensionOrMetricFilter": {
+                          "fieldName": "landingPagePlusQueryString",
+                          "stringFilter": {
+                            "matchType": "FULL_REGEXP",
+                            "value": "^(/audience-manager)$"
+                          },
+                          "atAnyPointInTime": true
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "orGroup": {
+                    "filterExpressions": [
+                      {
+                        "eventFilter": {
+                          "eventName": "session_duration_60"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
 }

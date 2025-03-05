@@ -46,23 +46,23 @@ export class AudienceBuilderService {
         name: formData.name,
         description: formData.description || 'Audience created by the Audience Builder',
         membershipLifeSpan: parseInt(formData.membershipLifeSpan, 10),
-        conditions: Array.isArray(formData.conditions) ? formData.conditions : [formData.conditions],
+        // Simply pass the condition names array instead of objects
+        conditions: formData.conditions,
         generatedPatterns: Array.isArray(formData.generatedPatterns) 
           ? formData.generatedPatterns 
           : [formData.generatedPatterns],
-        // Include properties in the payload since it's not in the URL path anymore
         properties: [propertyId]
       };
       
       // Use the /createAudience endpoint instead
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/createAudience`,
-        requestPayload
-      );
-      
+requestPayload
+);
+
       return response.data;
     } catch (error) {
-      throw new Error(`Failed to build audiencee: ${error.message}`);
+      throw new Error(`Failed to build audience: ${error.message}`);
     }
   }
 

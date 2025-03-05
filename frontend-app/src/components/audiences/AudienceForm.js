@@ -40,10 +40,8 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
     filter: audience?.filter || '',
     membershipLifeSpan: audience?.membershipLifeSpan || '30',
     properties: audience?.properties || properties,
-    conditions: audience?.conditions || [{ 
-      name: Object.keys(conditionsData)[0],
-      key: conditionsData[Object.keys(conditionsData)[0]]
-    }],
+    // Only store condition names, not the full objects
+    conditions: audience?.conditions || [Object.keys(conditionsData)[0]],
     urlPatterns: audience?.urlPatterns || [''],
     generatedPatterns: []
   });
@@ -79,34 +77,19 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
     }
   };
 
-  const handleConditionChange = (index, field, value) => {
+  // Simplify handleConditionChange to only store the name
+  const handleConditionChange = (index, value) => {
     const newConditions = [...formData.conditions];
-    
-    if (field === 'name') {
-      // When name changes, update both name and key
-      newConditions[index] = {
-        name: value,
-        key: conditionsData[value]
-      };
-    } else {
-      // For other fields
-      newConditions[index] = { 
-        ...newConditions[index], 
-        [field]: value 
-      };
-    }
-    
+    newConditions[index] = value;
     setFormData({ ...formData, conditions: newConditions });
   };
 
+  // Update addCondition to only add the name
   const addCondition = () => {
     const firstConditionName = Object.keys(conditionsData)[0];
     setFormData({
       ...formData,
-      conditions: [...formData.conditions, {
-        name: firstConditionName,
-        key: conditionsData[firstConditionName]
-      }]
+      conditions: [...formData.conditions, firstConditionName]
     });
   };
 
@@ -172,19 +155,20 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
     setSuccess(false);
   };
 
+  // Update the MultipleConditionsSelector component
   const MultipleConditionsSelector = () => (
     <Box sx={{ mb: 2 }}>
-      {formData.conditions.map((condition, index) => (
+      {formData.conditions.map((conditionName, index) => (
         <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
           <FormControl fullWidth>
             <InputLabel>Condition Type</InputLabel>
             <Select
-              value={condition.name}
-              onChange={(e) => handleConditionChange(index, 'name', e.target.value)}
+              value={conditionName}
+              onChange={(e) => handleConditionChange(index, e.target.value)}
             >
-              {Object.keys(conditionsData).map((conditionName) => (
-                <MenuItem key={conditionName} value={conditionName}>
-                  {conditionName}
+              {Object.keys(conditionsData).map((name) => (
+                <MenuItem key={name} value={name}>
+                  {name}
                 </MenuItem>
               ))}
             </Select>

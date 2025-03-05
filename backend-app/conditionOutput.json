@@ -1,44 +1,98 @@
-[
-    [
-        {
-            "clauseType": "INCLUDE",
-            "simpleFilter": {
-                "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-                "filterExpression": {
-                    "andGroup": {
-                        "filterExpressions": [
-                            {
-                                "orGroup": {
-                                    "filterExpressions": "$filterExpressions"
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
+{
+  "conditions": [
+    "BUY_NOW_BUTTON",
+    "MORE_THAN_60_SECONDS"
+  ],
+  "urlPatternExpressions": [
+    {
+      "dimensionOrMetricFilter": {
+        "fieldName": "landingPagePlusQueryString",
+        "stringFilter": {
+          "matchType": "FULL_REGEXP",
+          "value": "^(/audience-manager)$"
         },
-        {
-            "clauseType": "EXCLUDE",
-            "simpleFilter": {
-                "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-                "filterExpression": {
-                    "andGroup": {
-                        "filterExpressions": [
-                            {
-                                "orGroup": {
-                                    "filterExpressions": [
-                                        {
-                                            "eventFilter": {
-                                                "eventName": "session_duration_10"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
+        "atAnyPointInTime": true
+      }
+    }
+  ],
+  "audienceFilterClauses": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "dimensionOrMetricFilter": {
+                        "fieldName": "landingPagePlusQueryString",
+                        "stringFilter": {
+                          "matchType": "FULL_REGEXP",
+                          "value": "^(/audience-manager)$"
+                        },
+                        "atAnyPointInTime": true
+                      }
                     }
+                  ]
                 }
-            }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "buy_now_retailer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         }
-    ]
-]
+      }
+    },
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "dimensionOrMetricFilter": {
+                        "fieldName": "landingPagePlusQueryString",
+                        "stringFilter": {
+                          "matchType": "FULL_REGEXP",
+                          "value": "^(/audience-manager)$"
+                        },
+                        "atAnyPointInTime": true
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "session_duration_60"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

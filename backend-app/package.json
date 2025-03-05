@@ -23,5 +23,11 @@
   "devDependencies": {
     "nodemon": "^3.1.9"
   },
-  "type": "module"
+  "type": "module",
+  "nodemonConfig": {
+    "ignore": [
+      "*.json",
+      "node_modules/*"
+    ]
+  }
 }
