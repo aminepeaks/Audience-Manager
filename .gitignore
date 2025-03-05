@@ -5,4 +5,4 @@ frontend-app/node_modules
 backend-app/.env
 frontend-app/.env
 
-backend-app/resources
+backend-app/resources/service-account.json
