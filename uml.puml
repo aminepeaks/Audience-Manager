@@ -1,0 +1,238 @@
+@startuml "GA4 Audience Manager"
+
+' Core packages
+package "Frontend" {
+  ' Global State Management
+  package "State Management" {
+    class GlobalStore {
+      ' State slices
+      +audiencesSlice
+      +accountsSlice
+      +propertiesSlice
+      +uiSlice
+      ' Actions
+      +fetchAccounts()
+      +setAccounts()
+      +fetchProperties()
+      +setProperties()
+      +fetchAudiences()
+      +createAudience()
+      +deleteAudience()
+      +setLoading()
+      +setError()
+    }
+
+    class StoreProvider {
+      +store: GlobalStore
+      +wrapApplication()
+    }
+  }
+
+  ' Main Application Structure
+  class App {
+    +render()
+  }
+
+  class Main {
+    -history: Array
+    +handleNavigation()
+    +clearHistory()
+  }
+
+  ' Pages
+  class AudienceManager {
+    -selectedAccounts: Array
+    -selectedProperties: Array
+    -currentTab: number
+    -selectedAudience: Object
+    +handleAccountChange()
+    +handlePropertyChange()
+    +handleTabChange()
+    +handleEdit()
+  }
+
+  class Accounts {
+    +useEffect: fetchAccounts()
+  }
+
+  class Properties {
+    -accountName: string
+    +useEffect: fetchProperties()
+  }
+
+  class Audiences {
+    -accountName: string
+    -propertyId: string
+    -openDialog: boolean
+    +useEffect: fetchAudiences()
+    +handleCreateAudience()
+  }
+
+  ' Components
+  class AudienceForm {
+    -formData: Object
+    -urlError: boolean
+    -loading: boolean
+    -error: string
+    -success: boolean
+    +handleSubmit()
+    +handleConditionChange()
+    +addCondition()
+    +removeCondition()
+    +addUrlPattern()
+    +removeUrlPattern()
+    +handleUrlPatternChange()
+    +handleGeneratePatterns()
+    +validateForm()
+  }
+
+  class AudienceList {
+    -groupedAudiences: Object
+    -deleteDialog: Object
+    +handleDeleteAudience()
+    +getPropertyDisplayName()
+  }
+
+  class Sidebar {
+    -history: Array
+    +handleNavigation()
+    +clearHistory()
+  }
+
+  ' Service Layer with Hooks
+  package "Services/Hooks" {
+    class useAudiences {
+      +audiences: Array
+      +loading: boolean
+      +error: string
+      +fetchAudiences()
+      +createAudience()
+      +deleteAudience()
+    }
+
+    class useAccounts {
+      +accounts: Array
+      +loading: boolean
+      +error: string
+      +fetchAccounts()
+    }
+
+    class useProperties {
+      +properties: Object
+      +loading: boolean
+      +error: string
+      +fetchProperties()
+    }
+  }
+
+  ' API Services
+  class AudienceService {
+    +fetchAudiencesForProperty()
+    +deleteAudience()
+    +createAudience()
+  }
+
+  class AudienceBuilderService {
+    +buildAndCreateAudience()
+    +validateFormData()
+    +buildAudienceObject()
+  }
+
+  class DataService {
+    +fetchAllAccountsAndProperties()
+    +getCachedData()
+  }
+
+  ' Utils
+  class AudienceFilterBuilder {
+    +addUrlPattern()
+    +build()
+  }
+
+  class UrlPatternUtils {
+    +splitLandingPages()
+    +minifyLandingPages()
+  }
+}
+
+package "Backend" {
+  class Server {
+    +start()
+  }
+
+  ' Controllers
+  class AccountController {
+    +listAccounts()
+    +getAccount()
+  }
+
+  class PropertyController {
+    +listProperties()
+  }
+
+  class AudienceController {
+    +createAudience()
+    +listAudiences()
+    +getAudience()
+    +deleteAudience()
+  }
+
+  class ReportsController {
+    +runReport()
+  }
+
+  ' Routes
+  class Routes {
+    +setupRoutes()
+  }
+}
+
+' Relationships
+
+' Global state integration
+StoreProvider --> GlobalStore
+App --> StoreProvider : uses
+useAudiences --> GlobalStore : accesses/updates
+useAccounts --> GlobalStore : accesses/updates
+useProperties --> GlobalStore : accesses/updates
+
+' Component hierarchy
+App --> Main
+Main --> Sidebar
+Main --> Accounts
+Main --> Properties
+Main --> Audiences
+Main --> AudienceManager
+
+AudienceManager --> AudienceForm
+AudienceManager --> AudienceList
+
+' Hooks usage
+AudienceManager --> useAccounts : uses
+AudienceManager --> useProperties : uses
+AudienceManager --> useAudiences : uses
+
+Accounts --> useAccounts : uses
+Properties --> useProperties : uses
+Audiences --> useAudiences : uses
+
+' Service usage
+useAudiences --> AudienceService : calls
+useAccounts --> DataService : calls
+useProperties --> DataService : calls
+
+AudienceForm --> AudienceBuilderService : uses
+AudienceForm ..> UrlPatternUtils : uses
+AudienceBuilderService --> AudienceFilterBuilder : uses
+
+' Backend connections
+Server --> Routes
+Routes --> AccountController
+Routes --> PropertyController
+Routes --> AudienceController
+Routes --> ReportsController
+
+AudienceService --> BackendAPI : API calls
+DataService --> BackendAPI : API calls
+
+@enduml
