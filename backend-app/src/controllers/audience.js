@@ -1,42 +1,50 @@
-import { client } from "../config/oauth.js";
+import { client, dataClient } from "../config/oauth.js";
 import fs from 'fs';
-
+import { getFilterClausesByCondition } from '../config/index.js';
 
 const createAudienceObject = (conditions, generatedPatterns, name, membershipLifeSpan) => {
-  if (!conditions?.[0]?.key || !generatedPatterns?.[0]) {
+  try {
+    // Debug log
+    fs.writeFileSync(
+      'audienceRequest.json', 
+      JSON.stringify({ conditions, generatedPatterns, name, membershipLifeSpan }, null, 2)
+    );
+  } catch (error) {
+    console.warn('Failed to write debug file:', error);
+  }
+
+  // Validate inputs
+  if (!conditions || !conditions.length || !generatedPatterns || !generatedPatterns.length) {
     throw new Error('Invalid conditions or patterns');
   }
 
-  const baseFilterClause = conditions[0].key;
-  const patternExpression = {
+  // Create filter expressions based on generated patterns
+  const filterExpressions = generatedPatterns.map(pattern => ({
     dimensionOrMetricFilter: {
       fieldName: "landingPagePlusQueryString",
       stringFilter: {
         matchType: "FULL_REGEXP",
-        value: generatedPatterns[0]
+        value: pattern
       },
       atAnyPointInTime: true
     }
-  };
+  }));
 
-  const processedFilterClauses = baseFilterClause.map(clause => {
-    const filterExp = JSON.stringify(clause)
-      .replace('"$filterExpressions"', JSON.stringify([patternExpression]));
-    return JSON.parse(filterExp);
-  });
+  // Get filter clauses using the condition and replace placeholders
+  const filterClauses = getFilterClausesByCondition(conditions[0], filterExpressions);
 
   return {
     description: 'Audience created by the Audience Builder',
     displayName: name,
-    filterClauses: processedFilterClauses,
-    membershipDurationDays : membershipLifeSpan
+    filterClauses: filterClauses,
+    membershipDurationDays: membershipLifeSpan
   };
 };
 
 // **Create Audience**
 export const createAudience = async (req, res) => {
   try {
-    const { conditions, properties, generatedPatterns, name, membershipLifeSpan } = req.body;
+    const { conditions, properties, generatedPatterns, name, membershipLifeSpan, description } = req.body;
 
     // Validate required fields
     const requiredFields = { conditions, properties, name, membershipLifeSpan };
@@ -63,7 +71,8 @@ export const createAudience = async (req, res) => {
           audience: createAudienceObject(conditions, generatedPatterns, name, membershipLifeSpan)
         };
 
-        // fs.writeFileSync('audienceRequest.json', JSON.stringify(audienceRequest, null, 2));
+        // Debug log
+        fs.writeFileSync('audienceRequest.json', JSON.stringify(audienceRequest, null, 2));
 
         const [audience] = await client.createAudience(audienceRequest);
         return audience;
@@ -89,8 +98,7 @@ export const listAudiences = async (req, res) => {
     const [audiences] = await client.listAudiences({
       parent: formattedPropertyId
     });
-    // save the audiences to a json file for debugging
-    // fs.writeFileSync('audiences.json', JSON.stringify(audiences, null, 2));
+    
     res.json(audiences);
   } catch (err) {
     console.error('List audiences error:', err);
@@ -158,5 +166,29 @@ export const deleteAudience = async (req, res) => {
       error: 'An error occurred while archiving the audience',
       details: err.message
     });
+  }
+};
+
+// get audience lists using data api
+export const listAudiencesDataApi = async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const formattedPropertyId = propertyId.startsWith('properties/')
+      ? propertyId
+      : `properties/${propertyId}`;
+    
+    const audienceIterator = dataClient.listAudienceExportsAsync({
+      parent: formattedPropertyId,
+    });
+
+    const audiences = [];
+    for await (const audience of audienceIterator) {
+      audiences.push(audience);
+    }
+
+    res.json({ audiences });
+  } catch (err) {
+    console.error('List audiences error:', err);
+    res.status(500).send('An error occurred while fetching audiences');
   }
 };

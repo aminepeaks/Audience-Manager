@@ -23,6 +23,7 @@ import { splitLandingPages, minifyLandingPages } from '../../utils/urlPatternUti
 import { createAudience } from '../../Services/audienceService';
 import { getCachedData } from '../../Services/dataService';
 import conditionsData from '../../utils/conditions.json';
+import { AudienceBuilderService } from '../../Services/audienceBuilderService';
 
 const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
   // Create theme based on dark mode preference
@@ -62,24 +63,14 @@ const AudienceForm = ({ audience, properties, onSubmit, darkMode }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      setError('Please fill all required fields');
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
-      var propertiesList = [];
-      for (var i = 0; i < formData.properties.length; i++) {
-        propertiesList.push(getPropertyNamePath(formData.properties[i]));
-      }
-      formData.properties = propertiesList;
+
+      const result = await AudienceBuilderService.buildAndCreateAudience(formData);
       
-      const result = await createAudience(formData);
       setSuccess(true);
       onSubmit(result);
-      
     } catch (err) {
       setError(err.message);
     } finally {
