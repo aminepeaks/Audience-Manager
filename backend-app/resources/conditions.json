@@ -1,0 +1,554 @@
+{
+
+  "QMF_BASELINE": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_baseline"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_MODERATE": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_moderate"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_HIGH": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_high"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_MODERATE_LEAD": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_moderate_lead"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_HIGH_LEAD": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_high_lead"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_MODERATE_CONTENT": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_moderate_content"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_HIGH_CONTENT": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_high_content"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "ALL_SESSIONS": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "LESS_THAN_10_SECONDS": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "clauseType": "EXCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "session_duration_10"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "MORE_THAN_10_SECONDS": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "session_duration_10"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "MORE_THAN_30_SECONDS": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "session_duration_30"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "MORE_THAN_60_SECONDS": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "session_duration_60"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "MORE_THAN_90_SECONDS": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "session_duration_90"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "BUY_NOW_BUTTON": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "buy_now_retailer"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "ADD_TO_CART": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "add_to_cart"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "PHARMACY_FINDER_OPEN": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "pharmacy_finder_open"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "PHARMACY_FINDER_SEARCH": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "pharmacy_finder_search"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "VIEW_CONTENT": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "view_item"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "CONDITIONS": [
+    {
+        "value": "condition1",
+        "label": "Condition 1"
+    },
+    {
+        "value": "condition2",
+        "label": "Condition 2"
+    }
+  ]
+}
