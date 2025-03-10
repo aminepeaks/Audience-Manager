@@ -33,7 +33,7 @@ const AudienceManager = () => {
     const [selectedProperties, setSelectedProperties] = useState([]);
     const [currentTab, setCurrentTab] = useState(0);
     const [selectedAudience, setSelectedAudience] = useState(null);
-
+    
     // Use custom hooks instead of direct state management
     const {
         accounts,

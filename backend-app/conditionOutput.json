@@ -1,7 +1,7 @@
 {
   "conditions": [
-    "BUY_NOW_BUTTON",
-    "MORE_THAN_60_SECONDS"
+    "QMF_BASELINE",
+    "MORE_THAN_10_SECONDS"
   ],
   "urlPatternExpressions": [
     {
@@ -44,7 +44,7 @@
                   "filterExpressions": [
                     {
                       "eventFilter": {
-                        "eventName": "buy_now_retailer"
+                        "eventName": "qmf_baseline"
                       }
                     }
                   ]
@@ -83,7 +83,7 @@
                   "filterExpressions": [
                     {
                       "eventFilter": {
-                        "eventName": "session_duration_60"
+                        "eventName": "session_duration_10"
                       }
                     }
                   ]

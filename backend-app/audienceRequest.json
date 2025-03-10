@@ -1,8 +1,8 @@
 {
   "parent": "properties/294329184",
   "audience": {
-    "displayName": "test5",
-    "description": "Audience created by GA4 Audience Manager for test5",
+    "displayName": "test8",
+    "description": "Audience created by GA4 Audience Manager for test8",
     "membershipDurationDays": 30,
     "filterClauses": [
       {
@@ -33,7 +33,7 @@
                     "filterExpressions": [
                       {
                         "eventFilter": {
-                          "eventName": "buy_now_retailer"
+                          "eventName": "qmf_baseline"
                         }
                       }
                     ]
@@ -72,7 +72,7 @@
                     "filterExpressions": [
                       {
                         "eventFilter": {
-                          "eventName": "session_duration_60"
+                          "eventName": "session_duration_10"
                         }
                       }
                     ]

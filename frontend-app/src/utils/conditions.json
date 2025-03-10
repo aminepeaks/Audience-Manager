@@ -1,4 +1,214 @@
 {
+  "QMF_BASELINE": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_baseline"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_MODERATE": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_moderate"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_HIGH": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_high"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_MODERATE_LEAD": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_moderate_lead"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_HIGH_LEAD": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_high_lead"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_MODERATE_CONTENT": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_moderate_content"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "QMF_HIGH_CONTENT": [
+    {
+      "clauseType": "INCLUDE",
+      "simpleFilter": {
+        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
+        "filterExpression": {
+          "andGroup": {
+            "filterExpressions": [
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
+                  "filterExpressions": [
+                    {
+                      "eventFilter": {
+                        "eventName": "qmf_high_content"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
   "ALL_SESSIONS": [
     {
       "clauseType": "INCLUDE",
@@ -70,6 +280,11 @@
             "filterExpressions": [
               {
                 "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
+              {
+                "orGroup": {
                   "filterExpressions": [
                     {
                       "eventFilter": {
@@ -93,7 +308,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -119,7 +338,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -145,7 +368,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -171,7 +398,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -197,7 +428,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -223,7 +458,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -249,7 +488,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
@@ -275,7 +518,11 @@
         "filterExpression": {
           "andGroup": {
             "filterExpressions": [
-
+              {
+                "orGroup": {
+                  "filterExpressions": "$filterExpressions"
+                }
+              },
               {
                 "orGroup": {
                   "filterExpressions": [
