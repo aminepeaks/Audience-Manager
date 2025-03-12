@@ -41,6 +41,7 @@ const AudienceList = ({
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     audience: null,
+    isBatch: false,
     progress: {
       current: 0,
       total: 0,
@@ -52,6 +53,7 @@ const AudienceList = ({
     success: [],
     failed: []
   });
+  const [selectedAudiences, setSelectedAudiences] = useState([]);
 
   // Defensive property display name function
   const getPropertyDisplayName = useMemo(() => {
@@ -153,10 +155,12 @@ const AudienceList = ({
       return hasChanged ? newGrouped : prevGrouped;
     });
   }, [prepareGroupedAudiences]);
+
   const handleDeleteClick = (audience) => {
     setDeleteDialog({
       open: true,
       audience,
+      isBatch: false,
       progress: {
         current: 0,
         total: audience.sources.length,
@@ -169,6 +173,7 @@ const AudienceList = ({
     setDeleteDialog({
       open: false,
       audience: null,
+      isBatch: false,
       progress: { current: 0, total: 0, property: '' }
     });
     setDeleteStatus({ show: false, success: [], failed: [] });
@@ -176,12 +181,14 @@ const AudienceList = ({
 
   const handleDeleteConfirm = async () => {
     const { audience } = deleteDialog;
+    if (!audience) return;
+  
     setDeleteStatus({ show: true, success: [], failed: [] });
-    
+  
     for (let i = 0; i < audience.sources.length; i++) {
       const source = audience.sources[i];
       const [accountName, propertyId] = source.path.split('/').slice(-2);
-      
+  
       setDeleteDialog(prev => ({
         ...prev,
         progress: {
@@ -190,7 +197,7 @@ const AudienceList = ({
           property: source.displayName
         }
       }));
-
+  
       try {
         await onDelete(propertyId, audience.name);
         setDeleteStatus(prev => ({
@@ -204,7 +211,7 @@ const AudienceList = ({
         }));
       }
     }
-
+  
     if (onRefresh) {
       await onRefresh();
     }
@@ -218,6 +225,107 @@ const AudienceList = ({
     });
   };
 
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      setSelectedAudiences(Object.values(groupedAudiences).map(audience => audience.displayName));
+    } else {
+      setSelectedAudiences([]);
+    }
+  };
+
+  const handleSelectAudience = (event, audienceName) => {
+    if (event.target.checked) {
+      setSelectedAudiences(prev => [...prev, audienceName]);
+    } else {
+      setSelectedAudiences(prev => prev.filter(name => name !== audienceName));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    const selectedAudiencesToDelete = [...selectedAudiences]; 
+    
+    // Open confirmation dialog first
+    setDeleteDialog({
+      open: true,
+      audience: null, // No specific audience - it's a batch
+      isBatch: true, // Add this flag to identify batch operations
+      progress: {
+        current: 0,
+        total: selectedAudiencesToDelete.length,
+        property: ''
+      }
+    });
+    
+    // Don't set deleteStatus.show yet - wait for confirmation
+    setDeleteStatus({ 
+      show: false, 
+      success: [], 
+      failed: [] 
+    });
+  };
+
+  // Add a new handler for batch delete confirmation
+  const handleBatchDeleteConfirm = async () => {
+    const selectedAudiencesToDelete = [...selectedAudiences];
+    
+    // Now show the progress indicators
+    setDeleteStatus({ 
+      show: true, 
+      success: [], 
+      failed: [] 
+    });
+    
+    let successCount = 0;
+    let failedCount = 0;
+    
+    // Process each audience
+    for (let i = 0; i < selectedAudiencesToDelete.length; i++) {
+      const audienceName = selectedAudiencesToDelete[i];
+      const audience = groupedAudiences[audienceName];
+      
+      if (!audience) continue;
+      
+      // Update progress for current audience
+      setDeleteDialog(prev => ({
+        ...prev,
+        progress: {
+          current: i + 1,
+          total: selectedAudiencesToDelete.length,
+          property: audience.displayName
+        }
+      }));
+      
+      // Delete from all sources
+      for (let j = 0; j < audience.sources.length; j++) {
+        const source = audience.sources[j];
+        const [accountName, propertyId] = source.path.split('/').slice(-2);
+        
+        try {
+          await onDelete(propertyId, audience.name);
+          setDeleteStatus(prev => ({
+            ...prev,
+            success: [...prev.success, `${audience.displayName} (${source.displayName})`]
+          }));
+          successCount++;
+        } catch (error) {
+          setDeleteStatus(prev => ({
+            ...prev,
+            failed: [...prev.failed, `${audience.displayName} (${source.displayName})`]
+          }));
+          failedCount++;
+        }
+      }
+    }
+    
+    // Only refresh after all deletions are complete
+    if (onRefresh) {
+      await onRefresh();
+    }
+    
+    // Clear selections but keep dialog open to show results
+    setSelectedAudiences([]);
+  };
+
   const renderDeleteDialog = () => (
     <Dialog
       open={deleteDialog.open}
@@ -226,19 +334,24 @@ const AudienceList = ({
       fullWidth
     >
       <DialogTitle>
-        Delete Audience: {deleteDialog.audience?.displayName}
+        {deleteDialog.isBatch
+          ? `Delete ${selectedAudiences.length} Audiences`
+          : `Delete Audience: ${deleteDialog.audience?.displayName}`}
       </DialogTitle>
       <DialogContent>
         {!deleteStatus.show ? (
-          <Typography>
-            Are you sure you want to delete this audience from all selected properties?
-            This action cannot be undone.
-          </Typography>
+          <DialogContentText>
+            {deleteDialog.isBatch 
+              ? `Are you sure you want to delete ${selectedAudiences.length} audiences? This action cannot be undone.`
+              : `Are you sure you want to delete this audience? This action cannot be undone.`}
+          </DialogContentText>
         ) : (
           <Box sx={{ width: '100%' }}>
             <Box sx={{ mb: 2 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Deleting from: {deleteDialog.progress.property}
+                {deleteDialog.isBatch
+                  ? `Processing audience ${deleteDialog.progress.current} of ${deleteDialog.progress.total}`
+                  : `Deleting from: ${deleteDialog.progress.property}`}
               </Typography>
               <LinearProgress 
                 variant="determinate" 
@@ -264,7 +377,7 @@ const AudienceList = ({
                   </IconButton>
                 }
               >
-                Successfully deleted from: {deleteStatus.success.join(', ')}
+                Successfully deleted: {deleteStatus.success.length} items
               </Alert>
             )}
             
@@ -283,7 +396,7 @@ const AudienceList = ({
                   </IconButton>
                 }
               >
-                Failed to delete from: {deleteStatus.failed.join(', ')}
+                Failed to delete: {deleteStatus.failed.length} items
               </Alert>
             )}
           </Box>
@@ -294,7 +407,7 @@ const AudienceList = ({
           <>
             <Button onClick={handleDeleteClose}>Cancel</Button>
             <Button 
-              onClick={handleDeleteConfirm} 
+              onClick={deleteDialog.isBatch ? handleBatchDeleteConfirm : handleDeleteConfirm} 
               color="error" 
               variant="contained"
             >
@@ -335,9 +448,28 @@ const AudienceList = ({
 
   return (
     <>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Checkbox
+          indeterminate={selectedAudiences.length > 0 && selectedAudiences.length < Object.keys(groupedAudiences).length}
+          checked={selectedAudiences.length === Object.keys(groupedAudiences).length}
+          onChange={handleSelectAll}
+        />
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleBatchDelete}
+          disabled={selectedAudiences.length === 0}
+        >
+          Delete Selected
+        </Button>
+      </Box>
       <List>
         {Object.values(groupedAudiences).map((audience) => (
           <ListItem key={audience.displayName} divider>
+            <Checkbox
+              checked={selectedAudiences.includes(audience.displayName)}
+              onChange={(event) => handleSelectAudience(event, audience.displayName)}
+            />
             <ListItemText
               primary={audience.displayName}
               secondary={
