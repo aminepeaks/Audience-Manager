@@ -41,7 +41,7 @@ const AudienceManager = () => {
         error: accountsError,
         fetchAccounts
     } = useAccounts();
-    console.log(accounts);
+    // console.log(accounts);
 
     // Update the useProperties hook call to include selectedAccounts
     const {
@@ -50,7 +50,7 @@ const AudienceManager = () => {
         error: propertiesError,
         fetchProperties
     } = useProperties(selectedAccounts);
-    console.log(propertiesMap);
+    // console.log(propertiesMap);
 
     const {
         audiences,

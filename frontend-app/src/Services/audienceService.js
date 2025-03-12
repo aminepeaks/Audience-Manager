@@ -15,6 +15,9 @@ export class AudienceService {
 
   static async deleteAudience(accountName, propertyId, audienceName) {
     try {
+      console.log(accountName);
+      console.log(propertyId);
+      console.log(audienceName);
       await axios.delete(
         `${process.env.REACT_APP_API_URL}/accounts/${accountName}/properties/${propertyId}/audiences/${audienceName}`
       );

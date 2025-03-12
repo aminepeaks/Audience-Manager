@@ -94,9 +94,12 @@ package "Frontend" {
   }
 
   class Sidebar {
-    -history: Array
-    +handleNavigation()
-    +clearHistory()
+    +props: {history: Array, onNavigate(), onClearHistory()}
+    -cacheStatus: {loading: boolean, message: string, type: string}
+    +handleRefreshCache()
+    +handleClearCache()
+    +handleCloseMessage()
+    +renderCacheActions()
   }
 
   ' Service Layer with Hooks
@@ -234,5 +237,7 @@ Routes --> ReportsController
 
 AudienceService --> BackendAPI : API calls
 DataService --> BackendAPI : API calls
+
+Sidebar --> DataService : uses for cache operations
 
 @enduml

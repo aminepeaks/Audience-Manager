@@ -15,11 +15,16 @@ import {
   DialogActions,
   Button,
   Alert,
-  LinearProgress
+  LinearProgress,
+  Checkbox,
+  Tooltip,
+  Divider,
+  DialogContentText
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import { getCachedData } from '../../Services/dataService';
 

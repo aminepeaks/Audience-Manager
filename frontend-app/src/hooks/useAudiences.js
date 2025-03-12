@@ -103,7 +103,12 @@ export const useAudiences = (selectedProperties = []) => {
         accountName = "unknown"; 
       }
       
-      await AudienceService.deleteAudience(accountName, propertyId, audienceId);
+      // Extract just the audience ID from the full path if needed
+      const audienceIdOnly = audienceId.includes('/') 
+        ? audienceId.split('/').pop() 
+        : audienceId;
+      
+      await AudienceService.deleteAudience(accountName, propertyId, audienceIdOnly);
       await fetchAudiences(); // Refresh the audiences list
       
       setLocalError(null);
@@ -117,12 +122,60 @@ export const useAudiences = (selectedProperties = []) => {
       setLoading(false);
     }
   }, [fetchAudiences, setLoading, setError]);
+
+  const deleteAudienceBatch = async (propertyPath, audienceIds) => {
+    setLoading(true);
+    try {
+      // Extract account name and property ID from path
+      let accountName, propertyId;
+      
+      if (propertyPath.includes('/')) {
+        const pathParts = propertyPath.split('/');
+        propertyId = pathParts.pop(); // Last part is propertyId
+        pathParts.pop(); // Remove "properties" 
+        accountName = pathParts.pop(); // Get account name
+      } else {
+        propertyId = propertyPath;
+        accountName = "unknown";
+      }
+      
+      // Extract just the IDs from any paths in the array
+      const audienceIdsOnly = audienceIds.map(id => 
+        id.includes('/') ? id.split('/').pop() : id
+      );
+      
+      await AudienceService.deleteAudienceBatch(accountName, propertyId, audienceIdsOnly);
+      // Update state after successful deletion
+      setAudiences(prevAudiences => prevAudiences.filter(audience => !audienceIdsOnly.includes(audience.id)));
+      setGlobalAudiences(prevAudiences => prevAudiences.filter(audience => !audienceIdsOnly.includes(audience.id)));
+      return { success: true };
+    } catch (error) {
+      setError('Failed to delete audiences: ' + error.message);
+      return { success: false, error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportAudienceBatch = (selectedAudiences) => {
+    try {
+      return AudienceService.exportAudienceBatch(selectedAudiences);
+    } catch (error) {
+      setError('Failed to export audiences: ' + error.message);
+      return false;
+    }
+  };
+
   return {
     audiences,
     loading: localLoading,
     error: localError,
     fetchAudiences,
     createAudience,
-    deleteAudience
+    deleteAudience,
+    deleteAudienceBatch,
+    exportAudienceBatch
   };
 };
+
+export default useAudiences;
