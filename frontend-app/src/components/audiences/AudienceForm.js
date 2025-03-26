@@ -17,7 +17,11 @@ import {
   Snackbar,
   Typography,
   Icon,
-  LinearProgress
+  LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -29,6 +33,7 @@ import { getCachedData } from '../../Services/dataService';
 import conditionsData from '../../utils/conditions.json';
 import { AudienceBuilderService } from '../../Services/audienceBuilderService';
 import AudienceTemplateSelector from './AudienceTemplateSelector';
+import { saveTemplateToFile } from '../../Services/audienceTemplateService';
 
 // Define this function at the top level, outside the component
 const getPropertyNamePath = (propertyPath) => {
@@ -133,6 +138,11 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
     property: ''
   });
 
+  // State for save template dialog
+  const [openSaveTemplateDialog, setOpenSaveTemplateDialog] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [templateDescription, setTemplateDescription] = useState('');
+
   const validateForm = () => {
     if (!formData.name) return false;
     if (!formData.urlPatterns.length) return false;
@@ -141,32 +151,31 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
     return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      setError('Please fill out all required fields');
-      return;
-    }
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+  
     try {
-      setLoading(true);
-      setError(null);
-
-      // Check if we have multiple properties
-      if (!formData.properties || formData.properties.length === 0) {
+      // Ensure generatedPatterns defaults to ['/'] if empty
+      const updatedFormData = {
+        ...formData,
+        generatedPatterns: formData.generatedPatterns.length > 0 ? formData.generatedPatterns : ['^(/)$']
+      };
+  
+      if (!updatedFormData.properties || updatedFormData.properties.length === 0) {
         throw new Error("No properties selected for audience creation");
       }
-      // console.log(`Creating audience for properties: ${formData.properties.join(', ')}`);
+  
       setProgress({
-        total: formData.properties.length,
+        total: updatedFormData.properties.length,
         current: 0,
         property: 'Preparing audience...'
       });
-
-      // Send all properties at once to the backend
-      const result = await AudienceBuilderService.buildAndCreateAudienceForMultipleProperties(formData);
+  
+      const result = await AudienceBuilderService.buildAndCreateAudienceForMultipleProperties(updatedFormData);
       setSuccess(true);
-      // onSubmit(result);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -239,6 +248,26 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
   // Add function to handle closing success messages
   const handleCloseSuccess = () => {
     setSuccess(false);
+  };
+
+  // Function to handle saving template
+  const handleSaveTemplate = () => {
+    if (templateName.trim()) {
+      const newTemplate = {
+        id: templateName.toLowerCase().replace(/\s+/g, '-'),
+        displayName: templateName,
+        description: templateDescription,
+        icon: 'add_circle_outline',
+        config: {
+          ...formData
+        }
+      };
+  
+      // Save the template locally
+      saveTemplateToFile(newTemplate);
+  
+      setOpenSaveTemplateDialog(false);
+    }
   };
 
   // Update the MultipleConditionsSelector component
@@ -394,15 +423,23 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
                 onChange={(e) => setFormData({ ...formData, membershipLifeSpan: e.target.value })}
                 sx={{ mb: 2 }}
               />
-              <Button 
-                type="submit" 
-                variant="contained"
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={24} />
-                ) : audience ? 'Update' : 'Create'} Audience
-              </Button>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                <Button 
+                  type="submit" 
+                  variant="contained"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : audience ? 'Update' : 'Create'} Audience
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => setOpenSaveTemplateDialog(true)}
+                >
+                  Save as Template
+                </Button>
+              </Box>
               {loading && progress.total > 0 && (
                 <Box sx={{ width: '100%', mt: 2 }}>
                   <Typography variant="caption">
@@ -464,6 +501,38 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
               Audience successfully {audience ? 'updated' : 'created'}!
             </Alert>
           </Snackbar>
+
+          {/* Save Template Dialog */}
+          <Dialog open={openSaveTemplateDialog} onClose={() => setOpenSaveTemplateDialog(false)}>
+            <DialogTitle>Save Current Configuration as Template</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                label="Template Name"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label="Template Description"
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+                multiline
+                rows={3}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenSaveTemplateDialog(false)}>Cancel</Button>
+              <Button 
+                onClick={handleSaveTemplate} 
+                variant="contained" 
+                disabled={!templateName.trim()}
+              >
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Paper>
     </ThemeProvider>

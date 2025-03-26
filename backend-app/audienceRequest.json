@@ -1,8 +1,8 @@
 {
   "parent": "properties/294329184",
   "audience": {
-    "displayName": "Test3",
-    "description": "Audience created by GA4 Audience Manager for Test3",
+    "displayName": "test5",
+    "description": "Audience created by GA4 Audience Manager for test5",
     "membershipDurationDays": 30,
     "filterClauses": [
       {
@@ -20,7 +20,7 @@
                           "fieldName": "landingPagePlusQueryString",
                           "stringFilter": {
                             "matchType": "FULL_REGEXP",
-                            "value": "^(/)$"
+                            "value": "/"
                           },
                           "atAnyPointInTime": true
                         }
@@ -33,7 +33,7 @@
                     "filterExpressions": [
                       {
                         "eventFilter": {
-                          "eventName": "qmf_moderate"
+                          "eventName": "qmf_high"
                         }
                       }
                     ]

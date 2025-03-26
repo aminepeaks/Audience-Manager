@@ -1,6 +1,6 @@
 {
   "conditions": [
-    "QMF_MODERATE"
+    "QMF_HIGH"
   ],
   "urlPatternExpressions": [
     {
@@ -8,7 +8,7 @@
         "fieldName": "landingPagePlusQueryString",
         "stringFilter": {
           "matchType": "FULL_REGEXP",
-          "value": "^(/)$"
+          "value": "/"
         },
         "atAnyPointInTime": true
       }
@@ -30,7 +30,7 @@
                         "fieldName": "landingPagePlusQueryString",
                         "stringFilter": {
                           "matchType": "FULL_REGEXP",
-                          "value": "^(/)$"
+                          "value": "/"
                         },
                         "atAnyPointInTime": true
                       }
@@ -43,7 +43,7 @@
                   "filterExpressions": [
                     {
                       "eventFilter": {
-                        "eventName": "qmf_moderate"
+                        "eventName": "qmf_high"
                       }
                     }
                   ]
