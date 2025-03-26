@@ -143,6 +143,10 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      setError('Please fill out all required fields');
+      return;
+    }
     
     try {
       setLoading(true);
@@ -152,46 +156,17 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
       if (!formData.properties || formData.properties.length === 0) {
         throw new Error("No properties selected for audience creation");
       }
-
-      const results = [];
-      const propertiesToProcess = formData.properties.length;
-      
-      // Create progress tracking
+      // console.log(`Creating audience for properties: ${formData.properties.join(', ')}`);
       setProgress({
-        total: propertiesToProcess,
+        total: formData.properties.length,
         current: 0,
-        property: ''
+        property: 'Preparing audience...'
       });
 
-      // Create the audience for each property
-      for (let i = 0; i < formData.properties.length; i++) {
-        const propertyPath = formData.properties[i];
-        
-        // Extract property ID from path
-        const propertyId = propertyPath.includes('/') 
-          ? propertyPath.split('/').pop() 
-          : propertyPath;
-        
-        // Update progress
-        setProgress(prev => ({
-          ...prev,
-          current: i + 1,
-          property: propertyId
-        }));
-
-        // Create a modified formData for this specific property
-        const propertyFormData = {
-          ...formData,
-          propertyId: propertyPath
-        };
-
-        // Create audience for this property
-        const result = await AudienceBuilderService.buildAndCreateAudience(propertyFormData);
-        results.push(result);
-      }
-      
+      // Send all properties at once to the backend
+      const result = await AudienceBuilderService.buildAndCreateAudienceForMultipleProperties(formData);
       setSuccess(true);
-      onSubmit(results);
+      // onSubmit(result);
     } catch (err) {
       setError(err.message);
     } finally {

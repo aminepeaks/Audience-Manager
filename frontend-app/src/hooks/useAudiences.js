@@ -84,44 +84,44 @@ export const useAudiences = (selectedProperties = []) => {
     }
   }, [fetchAudiences, setLoading, setError]);
 
-  const deleteAudience = useCallback(async (propertyPath, audienceId) => {
+  const deleteAudience = useCallback(async (propertyId, audienceName) => {
     try {
       setLocalLoading(true);
       setLoading(true);
       
       // Extract account name and property ID from path
-      let accountName, propertyId;
+      let accountName, propertyIdToUse;
       
-      if (propertyPath.includes('/')) {
-        const pathParts = propertyPath.split('/');
-        propertyId = pathParts.pop(); // Last part is propertyId
+      if (propertyId.includes('/')) {
+        const pathParts = propertyId.split('/');
+        propertyIdToUse = pathParts.pop(); // Last part is propertyId
         pathParts.pop(); // Remove "properties"
         accountName = pathParts.pop(); // Get account name
       } else {
-        propertyId = propertyPath;
+        propertyIdToUse = propertyId;
         // This would be a fallback but is likely incorrect
         accountName = "unknown"; 
       }
       
       // Extract just the audience ID from the full path if needed
-      const audienceIdOnly = audienceId.includes('/') 
-        ? audienceId.split('/').pop() 
-        : audienceId;
+      const audienceIdOnly = audienceName.includes('/') 
+        ? audienceName.split('/').pop() 
+        : audienceName;
       
-      await AudienceService.deleteAudience(accountName, propertyId, audienceIdOnly);
-      await fetchAudiences(); // Refresh the audiences list
+      await AudienceService.deleteAudience(accountName, propertyIdToUse, audienceIdOnly);
       
       setLocalError(null);
+      return { success: true };
     } catch (error) {
       const errorMessage = error.message || 'Failed to delete audience';
       setLocalError(errorMessage);
       setError(errorMessage);
-      throw error;
+      return { success: false, error };
     } finally {
       setLocalLoading(false);
       setLoading(false);
     }
-  }, [fetchAudiences, setLoading, setError]);
+  }, [setLoading, setError]);
 
   const deleteAudienceBatch = async (propertyPath, audienceIds) => {
     setLoading(true);

@@ -106,6 +106,7 @@ export const createAudience = async (req, res) => {
     
     // If properties is not in the request body, construct it from path parameters
     let properties = req.body.properties;
+    console.log('Using properties from request body:', properties);
     
     // Handle route with path parameters
     if (!properties && req.params.propertyId) {
@@ -129,6 +130,7 @@ export const createAudience = async (req, res) => {
     // Create audiences in parallel
     const audiences = await Promise.all(
       properties.map(async (propertyId) => {
+        console.log('Creating audience for property:', propertyId);
         const formattedPropertyId = propertyId.startsWith('properties/') 
           ? propertyId 
           : `properties/${propertyId}`;

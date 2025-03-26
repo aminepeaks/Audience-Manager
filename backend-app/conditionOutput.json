@@ -1,7 +1,6 @@
 {
   "conditions": [
-    "QMF_BASELINE",
-    "MORE_THAN_10_SECONDS"
+    "QMF_MODERATE"
   ],
   "urlPatternExpressions": [
     {
@@ -9,7 +8,7 @@
         "fieldName": "landingPagePlusQueryString",
         "stringFilter": {
           "matchType": "FULL_REGEXP",
-          "value": "^(/audience-manager)$"
+          "value": "^(/)$"
         },
         "atAnyPointInTime": true
       }
@@ -31,7 +30,7 @@
                         "fieldName": "landingPagePlusQueryString",
                         "stringFilter": {
                           "matchType": "FULL_REGEXP",
-                          "value": "^(/audience-manager)$"
+                          "value": "^(/)$"
                         },
                         "atAnyPointInTime": true
                       }
@@ -44,46 +43,7 @@
                   "filterExpressions": [
                     {
                       "eventFilter": {
-                        "eventName": "qmf_baseline"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "clauseType": "INCLUDE",
-      "simpleFilter": {
-        "scope": "AUDIENCE_FILTER_SCOPE_WITHIN_SAME_SESSION",
-        "filterExpression": {
-          "andGroup": {
-            "filterExpressions": [
-              {
-                "orGroup": {
-                  "filterExpressions": [
-                    {
-                      "dimensionOrMetricFilter": {
-                        "fieldName": "landingPagePlusQueryString",
-                        "stringFilter": {
-                          "matchType": "FULL_REGEXP",
-                          "value": "^(/audience-manager)$"
-                        },
-                        "atAnyPointInTime": true
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "orGroup": {
-                  "filterExpressions": [
-                    {
-                      "eventFilter": {
-                        "eventName": "session_duration_10"
+                        "eventName": "qmf_moderate"
                       }
                     }
                   ]
