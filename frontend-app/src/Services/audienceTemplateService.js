@@ -9,13 +9,13 @@ const loadTemplates = () => {
   const storedTemplates = localStorage.getItem(TEMPLATE_STORAGE_KEY);
   return storedTemplates ? JSON.parse(storedTemplates) : [
     {
-      id: 'pageviews',
-      displayName: 'PageViews (All Pages)',
-      description: 'Users who viewed all pages but didn\'t purchase',
-      icon: 'kisibility',
+      id: 'qmf_baseline',
+      displayName: 'QMF Baseline',
+      description: 'Users with QMF_BASELINE ',
+      icon: 'PV',
       config: {
         displayName: 'Page Views (All Pages)',
-        description: 'Users who viewed all pages but didn\'t make a purchase',
+        description: 'Users with QMF_BASELINE ',
         membershipLifeSpan: 60,
         conditions: ["QMF_BASELINE"],
         generatedURLPatternRegex: '^(/)$'
@@ -50,4 +50,13 @@ export const saveTemplateToFile = (template) => {
 
   // Save updated templates to localStorage
   localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(audienceTemplates));
+};
+
+/**
+ * Remove a template by ID
+ */
+export const removeTemplateById = (templateId) => {
+  const updatedTemplates = audienceTemplates.filter(template => template.id !== templateId);
+  localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedTemplates));
+  return updatedTemplates;
 };

@@ -13,7 +13,8 @@ import {
     Chip,
     CircularProgress,
     Tabs,
-    Tab
+    Tab,
+    TextField
 } from '@mui/material';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CloseIcon from '@mui/icons-material/Close';
@@ -27,12 +28,16 @@ import { useAudiences } from '../hooks/useAudiences';
 import AudienceList from '../components/audiences/AudienceList';
 import AudienceForm from '../components/audiences/AudienceForm';
 
+const LOCAL_STORAGE_KEY = 'audienceManagerState';
+
 const AudienceManager = () => {
     // State from UML
     const [selectedAccounts, setSelectedAccounts] = useState([]);
     const [selectedProperties, setSelectedProperties] = useState([]);
     const [currentTab, setCurrentTab] = useState(0);
     const [selectedAudience, setSelectedAudience] = useState(null);
+    const [accountSearch, setAccountSearch] = useState('');
+    const [propertySearch, setPropertySearch] = useState('');
     
     // Use custom hooks instead of direct state management
     const {
@@ -65,6 +70,27 @@ const AudienceManager = () => {
     useEffect(() => {
         fetchAccounts();
     }, [fetchAccounts]);
+
+    useEffect(() => {
+        // Load saved state from localStorage on component mount
+        const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedState) {
+            const { accounts, properties, tab } = JSON.parse(savedState);
+            setSelectedAccounts(accounts || []);
+            setSelectedProperties(properties || []);
+            setCurrentTab(tab || 0);
+        }
+    }, []);
+
+    useEffect(() => {
+        // Save current state to localStorage whenever it changes
+        const stateToSave = {
+            accounts: selectedAccounts,
+            properties: selectedProperties,
+            tab: currentTab
+        };
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+    }, [selectedAccounts, selectedProperties, currentTab]);
 
     const handleAccountChange = (event) => {
         const selectedAccountIds = event.target.value;
@@ -205,6 +231,19 @@ const AudienceManager = () => {
 
     const isLoading = accountsLoading || propertiesLoading;
 
+    const filteredAccounts = accounts.filter(account =>
+        account.displayName.toLowerCase().includes(accountSearch.toLowerCase())
+    );
+
+    const filteredProperties = Object.entries(propertiesMap)
+        .filter(([accountId]) => selectedAccounts.includes(accountId))
+        .reduce((acc, [accountId, properties]) => {
+            acc[accountId] = properties.filter(property =>
+                property.displayName.toLowerCase().includes(propertySearch.toLowerCase())
+            );
+            return acc;
+        }, {});
+
     return (
         <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
@@ -222,8 +261,7 @@ const AudienceManager = () => {
                             renderValue={(selected) => (
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                     {selected.map((value) => {
-                                        const account = accounts && Array.isArray(accounts) ?
-                                            accounts.find(acc => acc.name === value) : null;
+                                        const account = accounts.find(acc => acc.name === value);
                                         return (
                                             <Chip
                                                 key={value}
@@ -242,15 +280,30 @@ const AudienceManager = () => {
                                 </Box>
                             )}
                         >
-                            {/* Add defensive check before calling map */}
-                            {Array.isArray(accounts) ? accounts.map((account) => (
+                            <MenuItem disableRipple>
+                                <TextField
+                                    placeholder="Search Accounts"
+                                    value={accountSearch}
+                                    onChange={(e) => setAccountSearch(e.target.value)}
+                                    fullWidth
+                                    size="small"
+                                    onKeyDown={(e) => e.stopPropagation()} // Prevent dropdown from intercepting key events
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Prevent dropdown from closing when clicking inside the search field
+                                    }}
+                                    sx={{
+                                        '& .MuiInputBase-root': {
+                                            bgcolor: 'background.paper',
+                                        },
+                                    }}
+                                />
+                            </MenuItem>
+                            {filteredAccounts.map((account) => (
                                 <MenuItem key={account.name} value={account.name}>
                                     <Checkbox checked={selectedAccounts.indexOf(account.name) > -1} />
                                     <ListItemText primary={account.displayName} />
                                 </MenuItem>
-                            )) : (
-                                <MenuItem disabled>No accounts available</MenuItem>
-                            )}
+                            ))}
                         </Select>
                     </FormControl>
 
@@ -276,6 +329,7 @@ const AudienceManager = () => {
                             </Box>
 
                             <FormControl fullWidth>
+                                <InputLabel>Select Properties</InputLabel>
                                 <Select
                                     multiple
                                     value={selectedProperties}
@@ -283,7 +337,7 @@ const AudienceManager = () => {
                                     renderValue={(selected) => (
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                             {selected.map((value) => {
-                                                const property = Object.values(propertiesMap)
+                                                const property = Object.values(filteredProperties)
                                                     .flat()
                                                     .find(prop => prop.name === value);
                                                 return (
@@ -304,7 +358,17 @@ const AudienceManager = () => {
                                         </Box>
                                     )}
                                 >
-                                    {Object.entries(getFilteredProperties()).map(([accountId, properties]) => [
+                                    <MenuItem disableRipple> 
+                                        <TextField
+                                            placeholder="Search Properties"
+                                            value={propertySearch}
+                                            onChange={(e) => setPropertySearch(e.target.value)}
+                                            fullWidth
+                                            onKeyDown={(e) => e.stopPropagation()} // Prevent dropdown from intercepting key events
+                                            size="small"
+                                        />
+                                    </MenuItem>
+                                    {Object.entries(filteredProperties).map(([accountId, properties]) => [
                                         <MenuItem
                                             key={`account-header-${accountId}`}
                                             disabled
@@ -314,7 +378,7 @@ const AudienceManager = () => {
                                                 {accounts.find(acc => acc.name === accountId)?.displayName}
                                             </Typography>
                                         </MenuItem>,
-                                        ...(Array.isArray(properties) ? properties.map((property) => (
+                                        ...properties.map((property) => (
                                             <MenuItem
                                                 key={`property-${accountId}-${property.name}`}
                                                 value={property.name}
@@ -322,7 +386,7 @@ const AudienceManager = () => {
                                                 <Checkbox checked={selectedProperties.includes(property.name)} />
                                                 <ListItemText primary={property.displayName} />
                                             </MenuItem>
-                                        )) : [])
+                                        ))
                                     ])}
                                 </Select>
                             </FormControl>

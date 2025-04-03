@@ -255,11 +255,11 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
     if (templateName.trim()) {
       const newTemplate = {
         id: templateName.toLowerCase().replace(/\s+/g, '-'),
-        displayName: templateName,
+        displayName: formData.displayName,
         description: templateDescription,
         icon: 'add_circle_outline',
         config: {
-          ...formData
+          ...formData // Use the current form data to populate the template
         }
       };
   
