@@ -217,10 +217,11 @@ const AudienceForm = ({ audience = null, properties = [], onSubmit, darkMode }) 
   };
 
   const handleUrlPatternChange = (index, value) => {
-    const newPatterns = [...formData.urlPatterns];
-    newPatterns[index] = value;
-    
-    setFormData({ ...formData, urlPatterns: newPatterns });
+    setFormData((prev) => {
+        const updatedPatterns = [...prev.urlPatterns];
+        updatedPatterns[index] = value;
+        return { ...prev, urlPatterns: updatedPatterns };
+    });
   };
 
   const handleGeneratePatterns = () => {
